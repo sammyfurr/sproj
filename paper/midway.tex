@@ -1,4 +1,4 @@
-\documentclass[12pt, twocolumn]{article}
+\documentclass[12pt]{article}
 \usepackage{multicol}
 \usepackage{cite}
 
@@ -15,17 +15,18 @@
 \section{Introduction}
 
 Debugging is invaluable in writing and understanding code, yet it is
-rarely formally taught.  We typically teach students programming
-structures, concepts, and languages, but we leave them to learn the
-tools they use to code by themselves.  This approach often works
-well---the programmer's choice of editor is \textit{very} personal,
-students figure out how to configure an individualized workflow.
-Perhaps because debuggers are tools, they often get lumped into the
-``teach yourself'' category.  Unlike editors or reference guides
-however, effectively using a debugger requires a set of high-level,
-platform agnostic, teachable skills.  Teaching these skills is
-effective, and translates into better, faster, debugging and
-programming.\cite{10.1145/3286960.3286970}\cite{10.1145/3361721.3361724}\par
+rarely formally taught\cite{doi:10.1080/08993400802114581}.  We
+typically teach students programming structures, concepts, and
+languages, but we leave them to learn the tools they use to code by
+themselves.  This approach often works well---the programmer's choice
+of editor is \textit{very} personal, students figure out how to
+configure an individualized workflow.  Perhaps because debuggers are
+tools, they often get lumped into the ``teach yourself'' category.
+Unlike editors or reference guides however, effectively using a
+debugger requires a set of high-level, platform agnostic, teachable
+skills.  Teaching these skills is effective, and translates into
+better, faster, debugging and
+programming\cite{10.1145/3286960.3286970}\cite{10.1145/3361721.3361724}.\par
 
 The use of a debugger is particularly important in a low-level
 programming classes, which is often the first time that students
@@ -53,11 +54,51 @@ approach.\par
 
 For my senior project, I want to develop a front-end interface to RR
 that enables collaborative debugging and process visualization on a
-varitey of non-traditional platforms.
+variety of non-traditional platforms.
 
 \section{The Value of Teaching Debugging}
 
+Before creating a platform for teaching debugging it's of course
+important to make sure that teaching debugging is actually valuable.
+There is not a lot research specifically into the efficacy of teaching
+debugging for computer science students, despite a recent rise in the
+inclusion of debugging in ``computational thinking''
+curriculums\cite{10.1145/3361721.3361724}.  These curriculums attempt
+to teach skills in computer science classes that are useful in other
+subject areas: the UK's computer science curriculum considers
+debugging an essential ``transferable skill''\cite{10.1145/2602484}.
+Though there seems to be confidence that the problem-solving
+techniques used in debugging are widely applicable, I am more
+interested in whether systematically teaching debugging actually
+benefits computer science students.  Michaeli and Romeike conducted a
+good, albeit somewhat small, study on the efficacy of teaching a
+systematic debugging process to K12 students.  They found that
+students who have been taught a specific debugging framework performed
+better in debugging tests and were more confident in their own
+debugging skills\cite{10.1145/3361721.3361724}.  Their result is
+positive evidence towards the efficacy of teaching debugging, though
+their research doesn't include college or university students.\par
 
+As Michaeli and Romeike point out, there is a lack of research into
+the value of teaching debugging in higher education.
+
+Research into how to best teach debugging is self-admittedly sparse.
+Chan et al. allow that ``in general research on how to improve
+debugging is sporadic''---an observation that leads them to research a
+framework to reduce the complexity of teaching
+debugging\cite{10.1145/3286960.3286970}.  To organize their framework,
+they split debugging knowledge into 5 categories: Domain, System,
+Procedural, Strategic, and Experiential.  They then review different
+debugging tools and teaching aids---from those that involve writing
+code to games---and map tools to the knowledge areas they seek to
+address.  After an evaluation of a host of different tools, they claim
+a few significant faults in current debugging teaching platforms.  The
+two of which I seek to address follow:
+\begin{itemize}
+\item A lack of tools addressing system knowledge (an understanding of
+  the program to be debugged).
+\item A lack of back-tracing ability/coverage.
+\end{itemize}
 
 \section{Debugger: Low Level}
 
