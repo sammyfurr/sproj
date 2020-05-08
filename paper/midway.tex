@@ -80,25 +80,57 @@ positive evidence towards the efficacy of teaching debugging, though
 their research doesn't include college or university students.\par
 
 As Michaeli and Romeike point out, there is a lack of research into
-the value of teaching debugging in higher education.
+the value of teaching debugging in higher education.  None of the
+research they found placed much focus on explicitly teaching
+debugging.  Chmiel and Loui studied whether students who were provided
+with debugging tools and frameworks performed better on tests or spent
+less time on assignments than those who were
+not\cite{10.1145/971300.971310}.  They weren't able to find conclusive
+evidence towards better performance on tests or assignments, though
+they did find that students in the treatment group felt more confident
+in their debugging abilities.  Unfortunately their study didn't
+involve extended explicit teaching of debugging--use of the tools was
+voluntary, and variations in the students' individual abilities made
+the data difficult to evaluate.\par
 
-Research into how to best teach debugging is self-admittedly sparse.
-Chan et al. allow that ``in general research on how to improve
-debugging is sporadic''---an observation that leads them to research a
-framework to reduce the complexity of teaching
+Despite the lack of higher education-specific research, I feel that
+the value of teaching debugging has still been demonstrated.  The
+research discussed all finds that K12 and college students alike
+commonly resort to sporadic debugging techniques when beginning to
+learn.  Given this, I see no reason why the conclusive and positive
+research toward the benefit of explicitly teaching debugging to K12
+students should not apply to their collegiate counterparts.\par
+
+Research into how to best teach debugging is also self-admittedly
+sparse.  Chan et al. allow that ``in general research on how to
+improve debugging is sporadic''---an observation that leads them to
+research a framework to reduce the complexity of teaching
 debugging\cite{10.1145/3286960.3286970}.  To organize their framework,
 they split debugging knowledge into 5 categories: Domain, System,
 Procedural, Strategic, and Experiential.  They then review different
 debugging tools and teaching aids---from those that involve writing
 code to games---and map tools to the knowledge areas they seek to
 address.  After an evaluation of a host of different tools, they claim
-a few significant faults in current debugging teaching platforms.  The
-two of which I seek to address follow:
-\begin{itemize}
+to find a few significant faults in current debugging teaching
+platforms.  The two of which I seek to address follow:
+
+\begin{enumerate}
+\item A lack of back-tracing ability/coverage.
 \item A lack of tools addressing system knowledge (an understanding of
   the program to be debugged).
-\item A lack of back-tracing ability/coverage.
-\end{itemize}
+\end{enumerate}
+
+Basing my collaborative debugging platform on RR solves the problem of
+back-tracing ability and coverage.  RR is a ``time traveling''
+addition to GDB, that allows for unlimited recording and replaying
+code execution deterministically, both backwards and
+forwards\cite{DBLP:journals/corr/OCallahanJFHNP17}.  By integrating
+the debugger with tools to visualize the execution and code space in
+an accessible way, I hope to address the issue of system knowledge.
+Though the system knowledge gained may be primarily applicable to low
+level programming, skills such as visualizing code execution and
+memory space are applicable to all types of coding.  These solutions
+are discussed in depth in the following sections.
 
 \section{Debugger: Low Level}
 
