@@ -1,6 +1,9 @@
 \documentclass[12pt]{article}
 \usepackage{multicol}
 \usepackage{cite}
+\usepackage{listings}
+
+\lstset{basicstyle=\ttfamily}
 
 \author{Sammy Furr}
 \title{Teaching Debugging Collaboratively---Midway Report}
@@ -133,6 +136,43 @@ memory space are applicable to all types of coding.  These solutions
 are discussed in depth in the following sections.
 
 \section{Debugger: Low Level}
+
+\subsection{Overview of RR}
+
+Time traveling debugging---stepping backwards and forwards through a
+program's execution---is supported naively by GDB through the use of
+commands such as \lstinline{reverse-continue} and
+\lstinline{reverse-stepi}.\cite{gdbman} What RR brings to the table is
+the ability to deterministically record and replay the execution of
+even very complex programs.  This allows single users to capture and
+debug events that may not happen every time a program runs and revisit
+debugging later.  Essentially for my planned collaborative debugger,
+execution can be replayed and debugged even \textit{on a different
+  computer} than the computer that recorded the original execution.
+In comparison to solutions like PANDA\cite{10.1145/2843859.2843867}
+that rely on capturing the entire state of of a virtual machine to
+replay execution, RR records and replays faster, produces far smaller
+files, and doesn't force execution inside of a
+VM.\cite{DBLP:journals/corr/OCallahanJFHNP17}
+
+\subsection{Limitations of RR}
+
+RR comes with two major limitations: it is only compatible with the
+Linux kernel, and it's deterministic recording and replay relies on a
+feature that is only found on modern \textit{Intel} x86 CPUs.  For my
+purposes the first limitation is fairly irrelevant--I expect students
+to be connecting to a central server in order to execute and replay
+code, and most systems classes are taught in Linux.  The second
+limitation poses more of a problem for instruction.  Because recording
+and replay is limited to x86 CPUs, classes cannot use a debugger based
+on RR to teach ARM assembly, which is becoming increasingly popular.
+Though this isn't a limitation that solutions like the aforementioned
+full-vm recorder PANDA face, RR still maintains the advantage of being
+a debugger first and foremost.  Students can learn RR, GDB, and
+debugging techniques simultaneously.  Platforms that require entire VM
+replay come with far greater performance and instructional overhead.
+Because of RR's ease of use and tight integration with GDB, I feel it
+is the best choice of platform to base a collaborative debugger on.
 
 \section{Debugger: High Level}
 
