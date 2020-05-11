@@ -3,6 +3,7 @@
 \usepackage{cite}
 \usepackage{listings}
 \usepackage{tikz}
+\usetikzlibrary{positioning}
 
 \lstset{basicstyle=\ttfamily}
 
@@ -140,8 +141,28 @@ are discussed in depth in the following sections.
 
 \subsection{Overview}
 
-\begin{tikzpicture} [node distance=2em, start chain=going right,]
+\begin{tikzpicture}
+  [node distance = 2em, auto, every node/.style={align=left,
+    rectangle, minimum size=2em, rounded corners, fill=blue!20, inner sep=1em},
+  ml/.style = {fill=green!30}]
 
+  \node (ll) 
+  {\textbf{Low Level:}\\
+    RR\\
+    gdb
+  };
+  \node (ml) [ml, right =of ll]
+  {\textbf{Mid Level:}\\
+    RR\\
+    gdb
+  };
+  \node (hl) [right =of ml]
+  {\textbf{High Level:}\\
+    Process Vis Tools\\
+    Interface to RR/GDB
+  };
+  \draw[<->] (ll) -- (ml);
+  \draw[<->] (ml) -- (hl);
 \end{tikzpicture}
 
 \subsection{Low Level}
