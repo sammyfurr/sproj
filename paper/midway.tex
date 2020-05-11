@@ -2,6 +2,7 @@
 \usepackage{multicol}
 \usepackage{cite}
 \usepackage{listings}
+\usepackage{tikz}
 
 \lstset{basicstyle=\ttfamily}
 
@@ -34,7 +35,7 @@ programming\cite{10.1145/3286960.3286970}\cite{10.1145/3361721.3361724}.\par
 The use of a debugger is particularly important in a low-level
 programming classes, which is often the first time that students
 encounter concepts like assembly instructions and memory addresses.
-Debuggers such as GCC offer incredibly powerful tools to step through
+Debuggers such as GDB offer incredibly powerful tools to step through
 and inspect running code.  Sadly, low level debugging tools are often
 less than intuitive, and provide little to no means for collaboration.
 Powerful tools such as RR exist that enable collaborative ``record and
@@ -135,9 +136,17 @@ level programming, skills such as visualizing code execution and
 memory space are applicable to all types of coding.  These solutions
 are discussed in depth in the following sections.
 
-\section{Debugger: Low Level}
+\section{Collaborative Debugger}
 
-\subsection{Overview of RR}
+\subsection{Overview}
+
+\begin{tikzpicture} [node distance=2em, start chain=going right,]
+
+\end{tikzpicture}
+
+\subsection{Low Level}
+
+\paragraph{Overview of RR}
 
 Time traveling debugging---stepping backwards and forwards through a
 program's execution---is supported naively by GDB through the use of
@@ -155,7 +164,7 @@ replay execution, RR records and replays faster, produces far smaller
 files, and doesn't force execution inside of a
 VM.\cite{DBLP:journals/corr/OCallahanJFHNP17}
 
-\subsection{Limitations of RR}
+\paragraph{Limitations of RR}
 
 RR comes with two major limitations: it is only compatible with the
 Linux kernel, and it's deterministic recording and replay relies on a
@@ -167,14 +176,31 @@ limitation poses more of a problem for instruction.  Because recording
 and replay is limited to x86 CPUs, classes cannot use a debugger based
 on RR to teach ARM assembly, which is becoming increasingly popular.
 Though this isn't a limitation that solutions like the aforementioned
-full-vm recorder PANDA face, RR still maintains the advantage of being
+full-VM recorder PANDA face, RR still maintains the advantage of being
 a debugger first and foremost.  Students can learn RR, GDB, and
 debugging techniques simultaneously.  Platforms that require entire VM
 replay come with far greater performance and instructional overhead.
 Because of RR's ease of use and tight integration with GDB, I feel it
 is the best choice of platform to base a collaborative debugger on.
 
-\section{Debugger: High Level}
+\subsection{High Level}
+
+There are many existing tools to visualize parts of the process space
+during execution, such as Python Tutor's C Tutor\cite{pythontutor}.
+Likewise, there are excellent platforms like Matt Godbolt's Compiler
+Explorer\cite{godbolt} that allow students to easily see the mapping
+of C code to assembly.  Unfortunately there are no student friendly
+tools such as these that integrate fully with GDB.  There are plugins
+that enhance the features of GDB to offer some further visualization,
+like GEF\cite{gef}, but these are typically designed with experts in
+mind.  While I feel that it is essential for students to learn
+real-world tools like GDB, research shows that visualization tools
+designed with teaching in mind significantly increase students'
+understanding\cite{10.1145/3328778.3366894}.  I want to marry the
+teaching-oriented interface of tools like C Tutor and the Compiler
+Explorer with the real-world power of GDB and RR.
+
+\subsection{Mid Level}
 
 \section{Next Steps}
 
