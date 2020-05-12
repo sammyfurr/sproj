@@ -94,7 +94,7 @@ not\cite{10.1145/971300.971310}.  They weren't able to find conclusive
 evidence towards better performance on tests or assignments, though
 they did find that students in the treatment group felt more confident
 in their debugging abilities.  Unfortunately their study didn't
-involve extended explicit teaching of debugging--use of the tools was
+involve extended explicit teaching of debugging---use of the tools was
 voluntary, and variations in the students' individual abilities made
 the data difficult to evaluate.\par
 
@@ -139,33 +139,9 @@ are discussed in depth in the following sections.
 
 \section{Collaborative Debugger}
 
-\subsection{Overview}
+% \subsection{Overview}
 
-\begin{tikzpicture}
-  [node distance = 2em, auto, every node/.style={align=left,
-    rectangle, minimum size=2em, rounded corners, fill=blue!20, inner sep=1em},
-  ml/.style = {fill=green!30}]
-
-  \node (ll) 
-  {\textbf{Low Level:}\\
-    RR\\
-    gdb
-  };
-  \node (ml) [ml, right =of ll]
-  {\textbf{Mid Level:}\\
-    RR\\
-    gdb
-  };
-  \node (hl) [right =of ml]
-  {\textbf{High Level:}\\
-    Process Vis Tools\\
-    Interface to RR/GDB
-  };
-  \draw[<->] (ll) -- (ml);
-  \draw[<->] (ml) -- (hl);
-\end{tikzpicture}
-
-\subsection{Low Level}
+\subsection{Preexisting Debugging Tools}
 
 \paragraph{Overview of RR}
 
@@ -190,7 +166,7 @@ VM.\cite{DBLP:journals/corr/OCallahanJFHNP17}
 RR comes with two major limitations: it is only compatible with the
 Linux kernel, and it's deterministic recording and replay relies on a
 feature that is only found on modern \textit{Intel} x86 CPUs.  For my
-purposes the first limitation is fairly irrelevant--I expect students
+purposes the first limitation is fairly irrelevant---I expect students
 to be connecting to a central server in order to execute and replay
 code, and most systems classes are taught in Linux.  The second
 limitation poses more of a problem for instruction.  Because recording
@@ -204,7 +180,7 @@ replay come with far greater performance and instructional overhead.
 Because of RR's ease of use and tight integration with GDB, I feel it
 is the best choice of platform to base a collaborative debugger on.
 
-\subsection{High Level}
+\subsection{User Facing Tools}
 
 There are many existing tools to visualize parts of the process space
 during execution, such as Python Tutor's C Tutor\cite{pythontutor}.
@@ -221,9 +197,67 @@ understanding\cite{10.1145/3328778.3366894}.  I want to marry the
 teaching-oriented interface of tools like C Tutor and the Compiler
 Explorer with the real-world power of GDB and RR.
 
-\subsection{Mid Level}
+% \subsection{Mid Level}
 
 \section{Next Steps}
+
+Further research is needed before I start on the user-facing part of
+the collaborative debugger.  I feel that it's important to pick and
+design visualization tools based on research into what works most
+effectively for students.  I also want the visualization tools to be
+as general as possible.  Though I plan to use them to visualize x86
+programs running in RR, tools like those to visualize registers could
+easily be written more generally, allowing them to represent ARM or
+MIPS registers.  In order to make the debugger as flexible as possible
+I plan on splitting the package into three parts:
+
+\begin{figure}[h]
+  \centering
+  \begin{tikzpicture}
+    [node distance = 2em, auto, every node/.style={align=left,
+      rectangle, minimum size=2em, rounded corners, fill=blue!20, inner
+      sep=1em}, ml/.style = {fill=green!30}]
+
+    \node (ll) 
+    {\textbf{Debugger Facing:}\\
+      hooks for specific\\
+      RR/GDB output\\
+      session management
+    };
+    \node (ml) [ml, right =of ll]
+    {\textbf{Middleware:}\\
+      server code\\
+      user management\\
+      and storage
+    };
+    \node (hl) [right =of ml]
+    {\textbf{User Facing:}\\
+      process vis tools\\
+      interface to\\
+      RR/GDB
+    };
+    \draw[<->] (ll) -- (ml);
+    \draw[<->] (ml) -- (hl);
+  \end{tikzpicture}
+  \caption{\textbf{Blue:} RR specific software. \textbf{Green:} general collaborative
+    debugging management}
+\end{figure}
+
+I'm not planning to directly extend RR or GDB to add collaborative
+debugging features.  Instead, I plan to write code that will hook into
+specific RR/GDB outputs and manage a single RR/GDB session.  This code
+will interface with server code that manages multiple users and
+coordinates collaborative debugging.  The server will pass on commands
+to user facing visualization tools, which will translate output from
+the debugger to visualizations and provide an interface to RR/GDB.
+Segmenting the code in this way allows the addition of different
+debugger backends or different front-end vis tools without changing
+the code that handles collaboration.  This makes the debugger
+extensible as methods and tools evolve.\par
+
+I plan to continue research and begin working on the software over the
+summer.  By the beginning of the Fall semester I hope to have made
+significant progress on the interface for a single user to RR/GDB.
 
 \pagebreak
 \bibliographystyle{acm}
