@@ -1,0 +1,43 @@
+Containers:
+
+  debug:
+    - rr
+    - program files
+    - rr translation software
+      - translates rr output -> json with pygdbmi
+      - translates input from client -> rr with pygdbmi
+    - client gets temp authentication token, revalidated every n seconds with database
+    - created on demand for each debug session
+    - can be saved
+
+  database:
+    - mongodb
+    - stores which user accounts correspond to which containers
+      - accounts are authenticated with github (login with github), I'm not doing auth stuff
+    - stores saved containers using GridFS and the block storage volume
+
+  orchestration:
+    - manages client<->debug container connections, providing authentication and temporary auth tokens
+    - creates debug containers
+    - loads debug containers in and out of storage as necessary
+
+  web server:
+    - nginx
+    - nodejs
+    - serves base pages to clients, and transfers auth/debug container requests to orchestration server
+
+
+
+Storage:
+
+  block storage volume:
+    - Stores saved debug sessions
+
+
+
+Client:
+
+  webapp:
+    - ace for code display [& editing] on mobile
+    - monaco for code displa [& editing] on desktop
+    - this is the shit that really gives me a headache, we'll have to figure out more later
