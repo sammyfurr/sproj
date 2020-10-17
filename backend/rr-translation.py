@@ -1,6 +1,6 @@
 from pygdbmi.gdbcontroller import GdbController
 from pprint import pprint
-
+import socketio
 
 class RRInterface:
     def __init__(self, session=None):
@@ -26,7 +26,7 @@ class RRInterface:
         for r in response:
             if r['type'] == 'console':
                 output.append(r['payload'])
-        return ''.join(output).replace("\\n", "\n")
+        return ''.join(output).replace("\\n", "\n").replace("\\t", "\t")
     
     def write(self, command):
         self.timeline.append(command)
@@ -35,17 +35,43 @@ class RRInterface:
 # Start gdb process
 #gdbmi = GdbController(command=["rr", "replay", "--", "--nx", "--quiet", "--interpreter=mi2"])
 
+sio = socketio.Client()
 rri = RRInterface()
+
 print(rri.init_message)
 
-while (command := input('(rr) ')) != 'exit':
-    print(rri.write(command))
+@sio.event
+def connect():
+    print("I'm connected!")
+    
+@sio.on('rr command')
+def on_rr_command(data):
+    print('Recieved rr command:')
+    print(data)
+    print('Passing command to rr')
+    response = rri.write(data['command'])
+    print('Emitting...')
+    sio.emit('rr response', {'response': response, 'from': data['sid'], 'command': data['command']})
+    
+    
+@sio.event
+def connect_error():
+    print("The connection failed!")
 
-print(rri.timeline)
+@sio.event
+def disconnect():
+    print("I'm disconnected!")
 
-rri2 = RRInterface()
-print(rri2.init_message)
+sio.connect('http://localhost:8000')
 
-for command in rri.timeline:
-    print('(rr) ' + command)
-    print(rri2.write(command))
+# while (command := input('(rr) ')) != 'exit':
+#     print(rri.write(command))
+
+# print(rri.timeline)
+
+# rri2 = RRInterface()
+# print(rri2.init_message)
+
+# for command in rri.timeline:
+#     print('(rr) ' + command)
+#     print(rri2.write(command))
