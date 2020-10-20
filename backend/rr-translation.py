@@ -8,6 +8,10 @@ class RRInterface:
         self.init_message = self.console_output(self.get_rr_response())
         self.timeline = []
 
+    def exited(self, response):
+        # Unsure if this will always be the second to last message, works for now.
+        return response[-2]['message'] == 'thread-group-exited'
+
     def end(self, response):
         last = response[-1]['message']
         return last == 'stopped' or last == 'done'
@@ -17,14 +21,14 @@ class RRInterface:
 
     def get_full_rr_response(self, command):
         response = self.gdbmi.write(command)
-        while(not self.end(response)):
+        while(not(self.end(response) or self.exited(response))):
             response.extend(self.get_rr_response())
         return response
 
     def console_output(self, response):
         output = []
         for r in response:
-            if r['type'] == 'console':
+            if r['type'] == 'console' or r['type'] == 'output':
                 output.append(r['payload'])
         return ''.join(output).replace("\\n", "\n").replace("\\t", "\t")
     
