@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: rr-server
+  labels:
+    purpose: serve-rr
+    app: rr-host
+spec:
+  containers:
+  - name: rr-test-container
+    image: registry.digitalocean.com/sproj/rr:server
+    securityContext:
+      capabilities:
+        add:
+        - SYS_PTRACE
+  restartPolicy: OnFailure

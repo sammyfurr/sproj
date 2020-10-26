@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: rr-translation
+  labels:
+    purpose: translate-rr
+spec:
+  containers:
+  - name: rr-test-container
+    image: registry.digitalocean.com/sproj/rr:translation
+    securityContext:
+      capabilities:
+        add:
+        - SYS_PTRACE
+  restartPolicy: OnFailure
