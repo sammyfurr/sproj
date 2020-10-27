@@ -2,7 +2,7 @@ import eventlet
 import socketio
 import time
 
-sio = socketio.Server(cors_allowed_origins='http://localhost:3000', sync_mode='eventlet')
+sio = socketio.Server(cors_allowed_origins='*', sync_mode='eventlet')
 app = socketio.WSGIApp(sio)
 
 @sio.on('rr command')

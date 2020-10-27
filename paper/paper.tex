@@ -1,15 +1,205 @@
-\documentclass[11pt]{article}
+\documentclass[12pt]{article}
+\usepackage{multicol}
 \usepackage{cite}
+\usepackage{listings}
+\usepackage{tikz}
+\usepackage[doublespacing]{setspace}
+
+\usepackage{titlesec}
+\newcommand{\sectionbreak}{\clearpage}
+\usetikzlibrary{positioning}
+
+\lstset{basicstyle=\ttfamily}
+
+\author{Sammy Furr}
+\title{The Development of a Collaborative Tool to Teach Debugging}
+\date{\today}
 
 \begin{document}
 
-\title{Sammy's Sproj}
-\author{Sammy Furr}
-\date{Today}
+\begin{titlepage}
 \maketitle
+\end{titlepage}
 
-Blablabla said Test~\cite{DBLP:journals/corr/OCallahanJFHNP17}.
+\begin{abstract}
+TODO: write an abstract
+\end{abstract}
 
+\tableofcontents
+\pagebreak
+
+\section{Introduction}
+\subsection{Motivation}
+
+Debugging is invaluable in writing and understanding code, yet it is
+rarely formally taught\cite{doi:10.1080/08993400802114581}.  We
+typically teach students programming structures, concepts, and
+languages, but leave them to learn the tools they use to write code by
+themselves.  This approach often works well---a programmer's choice of
+tools is often \textit{very} personal and students figure out how to
+configure an individualized workflow.  Perhaps because debuggers are
+tools, students are often expected to learn them with minimal
+guidance.  Unlike editors or reference guides however, effectively
+using a debugger requires a set of high-level, platform agnostic,
+teachable skills.  Teaching these skills is effective, and translates
+into better, faster, debugging and
+programming\cite{10.1145/3286960.3286970}\cite{10.1145/3361721.3361724}.
+
+\subsubsection{The Value of Teaching Debugging}
+
+There is an unfortunate lack of research specifically into the
+efficacy of teaching debugging for computer science students, despite
+a recent rise in the inclusion of debugging in ``computational
+thinking'' curriculums\cite{10.1145/3361721.3361724}.  These
+curriculums attempt to teach skills in computer science classes that
+translate into other subject areas: the UK's computer science
+curriculum considers debugging an essential ``transferable
+skill''\cite{10.1145/2602484}.\par There seems to be confidence that
+the problem-solving techniques used in debugging are widely
+applicable, but of greater interest to computer science teachers is
+whether teaching debugging directly benefits student programmers.
+Michaeli and Romeike conducted a good, albeit somewhat small, study on
+the efficacy of teaching a systematic debugging process to K12
+students.  They found that students who have been taught a specific
+debugging framework performed better in debugging tests and were more
+confident in their own debugging skills\cite{10.1145/3361721.3361724}.
+Their result is positive evidence towards the efficacy of teaching
+debugging, though it doesn't include college or university
+students.\par
+
+As Michaeli and Romeike point out, there is a lack of research into
+the value of teaching debugging in higher education.  None of the
+research these authors found placed much focus on explicitly teaching
+debugging.  Chmiel and Loui studied whether students who were provided
+with debugging tools and frameworks performed better on tests or spent
+less time on assignments than those who were
+not\cite{10.1145/971300.971310}.  Though this research wasn't able to
+find conclusive evidence towards better performance on tests or
+assignments, it did find that students in the treatment group felt
+more confident in their debugging abilities.  Unfortunately Chmiel and
+Loui's study didn't involve extended explicit teaching of
+debugging---use of the tools was voluntary, and variations in the
+students' individual abilities made the data difficult to
+evaluate.\par
+
+Though there is a lack of higher-education research, the value of
+teaching debugging is still demonstrable.  The research discussed all
+finds that K-12 and college students alike commonly resort to sporadic
+debugging techniques when beginning to learn.  Since this pattern of
+behavior that explicitly teaching debugging corrects exists in college
+as well as in K-12 students, it seems logical that the benefit of
+explicitly teaching debugging to K-12 students should be realized
+equally by their collegiate counterparts.\par
+
+\subsubsection{Methods for Teaching Debugging}
+
+Similarly to research on the value of teaching debugging, research
+into how to best teach debugging is self-admittedly sparse.  Chan et
+al. allow that ``in general research on how to improve debugging is
+sporadic''---an observation that leads them to research a framework to
+reduce the complexity of teaching
+debugging\cite{10.1145/3286960.3286970}.  To organize their framework,
+they split debugging knowledge into 5 categories: \textit{Domain},
+\textit{System}, \textit{Procedural}, \textit{Strategic}, and
+\textit{Experiential}.  They then review different debugging tools and
+teaching aids---from those that involve writing code to games---and
+map tools to the knowledge areas they seek to address.  After an
+evaluation of a host of different tools, they claim to find a few
+significant faults in current debugging teaching platforms. The
+primary two which this project seeks to address are as follows:
+
+\begin{enumerate}
+\item A lack of back-tracing ability/coverage.
+\item A lack of tools addressing system knowledge (an understanding of
+  the program to be debugged).
+\end{enumerate}
+
+\subsubsection{The Value of Collaborative Programming}
+
+TODO: find some basic research that backs up the claim that
+collaborative/pair programming is worthwhile.
+
+\subsubsection{Tools that Enable Collaborative Programming}
+
+TODO: write about glitch, repl.it, etc.
+
+\subsubsection{Collaborative Programming and Teaching Debugging}
+
+Debuggers exist at an intersection of tools and skills similar to
+programming languages themselves. By becoming familiar with a specific
+debugger, students learn techniques and paradigms necessary to use all
+debuggers effectively.
+
+\subsection{Project Components}
+
+\subsubsection{Mozilla's rr}
+
+\paragraph{Overview}
+
+rr is ``a lightweight tool for recording, replaying and debugging
+execution of applications''.\cite{rr-repo} rr allows a programmer to
+record the execution of a program on any compatible machine and replay
+the execution later.  This enhances GDB's ability to ``time-travel''
+when debugging, using commands such as \lstinline{reverse-continue}
+and \lstinline{reverse-stepi}\cite{gdbman} to step backwards and
+forwards through a program's execution.  Through a novel encapsulation
+of the execution space, rr is able to deterministically record and
+replay the execution of syscalls and other process behavior that
+differs run-to-run.  This is invaluable when trying to debug behavior
+that is not entirely dependent on the code being debugged.  A typical
+workflow in rr consists of recording an inexplicable error, replaying
+execution to find the area in which the error occurs, and then
+narrowing in on the bug not by re-running the entire program, but by
+progressing back and forth through execution in the problem area.
+
+\paragraph{Limitations}
+
+In comparison to solutions like PANDA\cite{10.1145/2843859.2843867}
+that rely on capturing the entire state of of a virtual machine to
+replay execution, rr records and replays faster, produces far smaller
+files, and doesn't force execution inside of a
+VM.\cite{DBLP:journals/corr/OCallahanJFHNP17} The tradeoff for these
+benefits are two major system limitations: rr is only compatible with
+the Linux kernel, and it's deterministic recording and replay relies
+on a feature that is only found on modern \textit{Intel} x86 CPUs.
+These limitations influenced the development of this project as a
+webapp similar to existing tools for collaborative programming.
+Luckily, the speed and size benefits of rr lend themselves well to
+non-local execution.
+
+\subsubsection{Kubernetes and Docker}
+
+TODO: Write about k8s and docker.
+
+\subsubsection{React}
+
+TODO: Write about react.
+
+\subsubsection{Xterm.js}
+
+TODO: Write about Xterm.js if I end up using it (which seems
+overwhelmingly likely ATM).
+
+\subsection{Project Overview}
+
+TODO: a brief overview linking aspects of the project to background
+research discussed above.
+
+\section{Design}
+
+TODO: the big piece of writing, detailing components of the project,
+the system as a whole, and motivations for design choices.
+
+\section{Next Steps}
+
+TODO: write about additional/necessary unimplemented features (ATM
+this is looking like auth stuff, unless OAuth2 proves to be less of a
+pain in the ass then when I've used it before in Javascript.  Maybe
+some of the vis stuff as well, though I'd really like to get the
+basics done here.)  Write about desire to actually do research and see
+whether the tool helps students learn debugging.
+
+\pagebreak
+\bibliographystyle{acm}
 \bibliography{sprojbib}{}
-\bibliographystyle{plain}
 \end{document}
