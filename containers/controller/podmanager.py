@@ -23,6 +23,13 @@ class TranslationPodManager:
         resp = self.v1.create_namespaced_pod(
             body=dep, namespace='default')
         print("Pod created.  status='%s'" % resp.metadata.name)
+        # Wait to return the channel until the pod is live and read to
+        # recieve incomming communication
+        status = self.v1.read_namespaced_pod_status(channel, 'default').status.container_statuses
+        # 
+        while status == None or status[0].state.running == None:
+            await asyncio.sleep(1)
+            status = self.v1.read_namespaced_pod_status(channel, 'default').status.container_statuses
         return channel
 
 
@@ -35,6 +42,7 @@ class TranslationPodManager:
         # terminating.  Creation of the new pod would fail.
         await asyncio.sleep(60)
         self.dbc.delete_pod(self.dbc.get_pod_by_channel(channel))
+        return
         # while True:
         #     try:
         #         print(channel)

@@ -24,13 +24,13 @@ class DatabaseController:
         self.min_channel = 10000
         self.max_channel = 99999
         self.max_channels = self.max_channel - self.min_channel
-
+        
     # User Methods
 
     def add_user(self, name):
         """Given a name, attempt to add the user into the database"""
         return str(self.users.insert_one({'name': name,
-                                          'pods': []}).inserted_id)
+                                          'pods': []}).inserted_id)        
 
     def delete_user(self, uid):
         """Given a uid, delete a user"""

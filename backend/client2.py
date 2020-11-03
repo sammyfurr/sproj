@@ -12,7 +12,7 @@ def connect():
 def on_pod_created(data):
     print(data)
 
-@sio.on('pod_delete')
+@sio.on('pod_deleted')
 def on_pod_deleted(data):
     print(data)
     
@@ -29,7 +29,8 @@ sio.connect('http://localhost:8001')
 # while (command := input('(rr) ')) != 'exit':
 #     sio.call('rr command', {'command': command}, timeout=60)
 
-# sio.emit('pod_create', {'names': ['sari', 'sammy']})
-sio.emit('pod_delete', {'channel': '77562'})
+sio.emit('pod_create', {'names': ['sari', 'sammy']})
+sio.emit('pod_delete', {'channel': '60852'})
+sio.emit('pod_delete', {'channel': '28483'})
 # sio.emit('pod_delete', {'channel': '39640'})
 sio.wait()
