@@ -1,6 +1,7 @@
 from pygdbmi.gdbcontroller import GdbController
 from pprint import pprint
 import socketio
+import sys
 
 class RRInterface:
     def __init__(self, session=None):
@@ -36,11 +37,9 @@ class RRInterface:
         self.timeline.append(command)
         return self.console_output(self.get_full_rr_response(command))
 
-# Start gdb process
-#gdbmi = GdbController(command=["rr", "replay", "--", "--nx", "--quiet", "--interpreter=mi2"])
-
 sio = socketio.Client()
 rri = RRInterface()
+channel = None
 
 print(rri.init_message)
 
@@ -55,8 +54,7 @@ def on_rr_command(data):
     print('Passing command to rr')
     response = rri.write(data['command'])
     print('Emitting...')
-    sio.emit('rr response', {'response': response, 'from': data['sid'], 'command': data['command']})
-    
+    sio.emit('rr response', {'response': response, 'from': data['sid'], 'command': data['command'], 'channel': channel})
     
 @sio.event
 def connect_error():
@@ -66,16 +64,7 @@ def connect_error():
 def disconnect():
     print("I'm disconnected!")
 
-sio.connect('http://rr-host-load-balancer:8000')
-
-# while (command := input('(rr) ')) != 'exit':
-#     print(rri.write(command))
-
-# print(rri.timeline)
-
-# rri2 = RRInterface()
-# print(rri2.init_message)
-
-# for command in rri.timeline:
-#     print('(rr) ' + command)
-#     print(rri2.write(command))
+if __name__ == '__main__':
+    channel = sys.argv[1]
+    sio.connect('http://rr-host-load-balancer:8000')
+    sio.emit('join_channel', {'channel': channel})

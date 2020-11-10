@@ -20,4 +20,3 @@ COPY test.py .
 COPY server.py .
 COPY rr-translation.py .
 COPY startup.sh .
-CMD ["sh", "startup.sh"]

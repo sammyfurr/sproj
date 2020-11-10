@@ -12,7 +12,7 @@ tpm = TranslationPodManager(url='165.227.252.45', port=27017)
 @sio.on('pod_create')
 async def on_pod_create(sid, data):
     channel = await tpm.create_pod(data['names'])
-    await sio.emit('pod_created', {'names': data['names'], 'channel': channel})
+    await sio.emit('pod_created', {'names': data['names'], 'channel': channel}, to=sid)
 
 @sio.on('pod_delete')
 async def on_pod_delete(sid, data):

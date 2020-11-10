@@ -14,6 +14,10 @@ class DuplicateUserError(Exception):
     """Raised when a duplicated username is attempted to be used"""
     pass
 
+class NoMatchingUserError(Exception):
+    """Raised when a username isn't registered"""
+    pass
+
 class DatabaseController:
     """Provides interface to mongodb database"""
     def __init__(self, url='localhost', port=27017):
@@ -29,14 +33,17 @@ class DatabaseController:
 
     def add_user(self, name):
         """Given a name, attempt to add the user into the database"""
-        return str(self.users.insert_one({'name': name,
-                                          'pods': []}).inserted_id)        
+        try:
+            return str(self.users.insert_one({'name': name,
+                                              'pods': []}).inserted_id)
+        except pymongo.DuplicateKeyError:
+            raise DuplicateUserError
 
     def delete_user(self, uid):
         """Given a uid, delete a user"""
         self.pods.update_many({}, {'$pull': {'users': uid}})
         self.users.delete_one({'_id': uid})
-
+        
     def get_userids_by_name(self, names):
         """Given a list of names, retrieve the mongodb ids for the users"""
         users = self.users.find({'name': {'$in': names}}, {"_id": 1})
@@ -44,6 +51,10 @@ class DatabaseController:
             return [u['_id'] for u in users]
         else:
             return []
+
+    def get_userid_by_name(self, name):
+        user = self.users.find_one({'name': name})
+        return user['_id']
 
     # Pod Methods
     
@@ -64,6 +75,9 @@ class DatabaseController:
             except errors.DuplicateKeyError:
                 pass
         raise NoOpenChannelError
+
+    def get_pods_by_user(self, uid):
+        return self.pods.find({"users": uid})
     
     def get_pod_by_channel(self, channel):
         """Given a channel, return corresponding pod id"""

@@ -8,7 +8,7 @@ metadata:
 spec:
   containers:
   - name: rr-test-container
-    image: registry.digitalocean.com/sproj/rr:server-latest
+    image: registry.digitalocean.com/sproj/rr:server-channel-latest
     securityContext:
       capabilities:
         add:
