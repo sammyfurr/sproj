@@ -1,6 +1,8 @@
 import React from 'react';
-import socketIOClient from "socket.io-client";
+import socketIOClient from 'socket.io-client';
 import './App.css';
+import XTerm, {Terminal} from 'react-xterm';
+import 'xterm/css/xterm.css';
 
 async function post_request (url, data) {
     // Send a post request to the server, which will forward it to our
@@ -125,6 +127,149 @@ class ChannelForm extends React.Component {
     }
 }
 
+class RRTerm extends React.Component {
+
+    constructor(props) {
+	super(props);
+	this.state = {command: '', /*history: [], historyIndex: 0*/};
+	this.inputRef=React.createRef();
+	this.term = null;
+	this.runTerminal = this.runTerminal.bind(this);
+	this.updateCommand = this.updateCommand.bind(this);
+	this.sendCommand = this.sendCommand.bind(this);
+	// this.historyPrevious = this.historyPrevious.bind(this);
+	// this.historyAdd = this.historyAdd.bind(this);
+    }
+
+    componentDidMount() {
+	this.term = this.inputRef.current.getTerminal();
+        this.runTerminal();
+    }
+    
+    componentWillUnmount() {
+        this.inputRef.current?.componentWillUnmount();
+    }
+
+    // historyPrevious() {
+    // 	let i = this.state.historyIndex;
+    // 	let h = this.state.history;
+    // 	return (h, i) => {
+    // 	    if(h !== [] && (h.length - i) > 0){
+    // 		this.setState({historyIndex: h -1})
+    // 		return h[h.length - i - 1];
+    // 	    }
+    // 	    return false;
+    // 	};
+    // }
+
+    // historyAdd(n) {
+    // 	const h = this.state.history;
+    // 	((h, n) => {
+    // 	    this.setState({history: h + n});
+    // 	})(h, n);
+    // 	console.log(this.state.history);
+    // }
+
+    updateCommand(c, n) {
+    	if(n === 'delete'){
+    	    this.setState({command: c.slice(0, -1)});
+    	} else{
+    	    this.setState({command: c + n});
+    	}
+    }
+
+    sendCommand(c) {
+	// Update command history index
+	// this.setState({historyIndex: -1});
+	this.props.socket.emit('rr command', {'command': c, 'channel': this.props.channel});
+    }
+
+    runTerminal() {
+	const prompt = '(rr) ';
+	const prompt_length = prompt.length;
+	this.term.prompt = () => {
+	    this.term.write('\r\n' + prompt);
+	}
+
+	this.term.clear = () => {
+	    const toclear = this.term.buffers._activeBuffer.x - prompt_length;
+	    this.term.write('\b \b'.repeat(toclear));
+	    this.setState({command: ''});
+	}
+	
+	this.term.writeln('Welcome to Collab RR');
+	this.term.prompt();
+
+	this.props.socket.on('rr response', (data) => {
+	    if(data['from'] !== this.props.socket.id){
+		// If the command originated from a different client, display it.
+		this.term.disableStdin = true;
+		this.term.clear();
+//		this.historyAdd(data['command']);
+		this.term.write(data['command']);
+	    };
+	    this.term.writeln('');
+	    data['response'].split(/\n+/).forEach((l) => {
+		this.term.writeln(l);
+	    });
+	    console.log(data['response']);
+	    this.term.prompt();
+	    this.term.disableStdin = false;
+	});
+
+	this.term.on('key', (key, ev) => {
+	    const printable = !ev.altKey && !ev.ctrlKey && !ev.metaKey;
+//	    console.log(ev.keyCode);
+	    if (ev.keyCode === 13) {
+		// Newline
+		this.term.disableStdin = true;
+		const c = this.state.command;
+//		this.historyAdd(c)
+		this.sendCommand(c);
+		this.setState({command: ''});
+	    } else if (ev.keyCode === 8) {
+		// Backspace
+		// Do not delete the prompt
+		if (this.term.buffers._activeBuffer.x > prompt_length) {
+		    this.term.write('\b \b');
+		    this.updateCommand(this.state.command, 'delete');
+		}
+	    } else if (ev.keyCode === 38) {
+		// Up Arrow
+		// let previous = this.historyPrevious();
+		// if(previous){
+		//     this.term.disableStdin = true;
+		//     this.term.clear();
+		//     this.term.write(previous);
+		//     this.term.disableStdin = false;
+//		}
+	    } else if (ev.keyCode === 40) {
+		// Down Arrow
+	    } else if (printable) {
+		this.term.write(key);
+		this.updateCommand(this.state.command, key);
+	    }
+	});
+
+	this.term.on('paste', (data, ev) => {
+	    this.term.write(data);
+	});
+    }
+
+    render() {
+        return (
+            <XTerm ref={this.inputRef}
+                   addons={['fit', 'fullscreen', 'search']}
+                   style={{
+                       overflow: 'hidden',
+                       position: 'relative',
+                       width: '100%',
+                       height: '100%'
+                   }}/>
+        );
+    }
+}
+
 function LogoutButton(props) {
     return (
 	<button onClick={props.onClick}>
@@ -158,13 +303,6 @@ class Debugger extends React.Component {
 		      pods: []};
 	
 	this.socket = socketIOClient('http://157.230.64.84:8000');
-	this.socket.on('rr response', (data) => {
-	    if(data['from'] !== this.socket.id){
-		console.log(data['command']);
-	    };
-	    console.log(data['response']);
-	    console.log('data', data);
-	});
 	
 	this.onLogin = this.onLogin.bind(this);
 	this.onLogout = this.onLogout.bind(this);
@@ -235,17 +373,18 @@ class Debugger extends React.Component {
 	    pods = <PodList pods={this.state.pods}/>;
 	}
 
-	let rrform;
+	let rrterm;
 	if (isLoggedIn && channelSet) {
-	    rrform = <RRForm channel={this.state.channel} socket={this.socket}/>;
+	    rrterm = <RRTerm channel={this.state.channel} socket={this.socket}/>;
 	}
+	
 	return (
 	    <div>
 	      {login}
 	      {channel}
 	      {newButton}
 	      {pods}
-	      {rrform}
+	      {rrterm}
 	    </div>
 	);
     }
