@@ -3,6 +3,7 @@ import socketIOClient from 'socket.io-client';
 import './App.css';
 import XTerm, {Terminal} from 'react-xterm';
 import 'xterm/css/xterm.css';
+import WebFont from 'webfontloader';
 
 async function post_request (url, data) {
     // Send a post request to the server, which will forward it to our
@@ -42,7 +43,7 @@ class RRForm extends React.Component {
 		Command:
 		<input type="text" value={this.state.value} onChange={this.handleChange} />
 	      </label>
-	      <input type="submit" value="send" />
+	      <input type="submit" value="send"><i className="material-icons">face</i></input>
 	    </form>
 	);
     }
@@ -76,12 +77,12 @@ class LoginForm extends React.Component {
 
     render() {
 	return (
-	    <form onSubmit={this.handleSubmit}>
-	      <label>
-		Login or Register:
-		<input type="text" value={this.state.name} onChange={this.handleChange} />
-	      </label>
-	      <input type="submit" value="login/register" />
+	    <form className='simple-form' onSubmit={this.handleSubmit}>
+	      <label>Login or Register:</label>
+	      <div className='simple-submit'>
+		<input type="text" value={this.state.name} onChange={this.handleChange}/>
+		<button type="submit"><i className="material-icons">arrow_forward_ios</i></button>
+	      </div>
 	    </form>
 	);
     }
@@ -116,12 +117,12 @@ class ChannelForm extends React.Component {
 
     render() {
 	return (
-	    <form onSubmit={this.handleSubmit}>
-	      <label>
-		Session ID:
+	    <form className='simple-form' onSubmit={this.handleSubmit}>
+	      <label>Session ID:</label>
+	      <div className='simple-submit'>
 		<input type="text" value={this.state.channel} onChange={this.handleChange} />
-	      </label>
-	      <input type="submit" value="join" />
+		<button type="submit"><i className="material-icons">arrow_forward_ios</i></button>
+	      </div>
 	    </form>
 	);
     }
@@ -219,22 +220,22 @@ class RRTerm extends React.Component {
 
 	this.term.on('key', (key, ev) => {
 	    const printable = !ev.altKey && !ev.ctrlKey && !ev.metaKey;
-//	    console.log(ev.keyCode);
-	    if (ev.keyCode === 13) {
+	    console.log(key, ev);
+	    if (ev.key === "Enter") {
 		// Newline
 		this.term.disableStdin = true;
 		const c = this.state.command;
 //		this.historyAdd(c)
 		this.sendCommand(c);
 		this.setState({command: ''});
-	    } else if (ev.keyCode === 8) {
+	    } else if (ev.key === "Backspace") {
 		// Backspace
 		// Do not delete the prompt
 		if (this.term.buffers._activeBuffer.x > prompt_length) {
 		    this.term.write('\b \b');
 		    this.updateCommand(this.state.command, 'delete');
 		}
-	    } else if (ev.keyCode === 38) {
+	    } else if (ev.key === "ArrowUp") {
 		// Up Arrow
 		// let previous = this.historyPrevious();
 		// if(previous){
@@ -242,8 +243,8 @@ class RRTerm extends React.Component {
 		//     this.term.clear();
 		//     this.term.write(previous);
 		//     this.term.disableStdin = false;
-//		}
-	    } else if (ev.keyCode === 40) {
+//()		}
+	    } else if (ev.key === "ArrowDown") {
 		// Down Arrow
 	    } else if (printable) {
 		this.term.write(key);
@@ -273,7 +274,7 @@ class RRTerm extends React.Component {
 function LogoutButton(props) {
     return (
 	<button onClick={props.onClick}>
-	  Logout
+	  <i className="material-icons">close</i>
 	</button>
     );
 }
@@ -282,7 +283,7 @@ function NewDebugButton(props) {
     // Creates a new debug session
     return (
 	<button onClick={props.onClick}>
-	  New
+	  <i className="material-icons">add</i>
 	</button>
     );
 }
@@ -347,8 +348,9 @@ class Debugger extends React.Component {
     render() {
 	const isLoggedIn = !(this.state.user === '');
 	let login;
+	let user;
 	if (isLoggedIn) {
-	    login = <div><span>{this.state.user}</span><LogoutButton onClick={this.onLogout}/></div>;
+	    user = <div className='user'><span>{this.state.user}</span><LogoutButton onClick={this.onLogout}/></div>;
 	}
 	else {
 	    login = <LoginForm onLogin={this.onLogin}/>;
@@ -364,33 +366,51 @@ class Debugger extends React.Component {
 	}
 	else if (isLoggedIn) {
 	    channel = <ChannelForm name={this.state.user} onChannel={this.onChannel}/>;
-	    newButton = <NewDebugButton onClick={this.onNew}/>;
+	    newButton = <div><span className='title'>New Debug Session:</span><NewDebugButton onClick={this.onNew}/></div>;
 	}
 
-	const hasPods = this.state.pods !== [];
+	const hasPods = this.state.pods.length > 0;
 	let pods;
 	if (hasPods && !channelSet) {
-	    pods = <PodList pods={this.state.pods}/>;
+	    pods = <div><span className='title'>Running Debug Sessions:</span><PodList pods={this.state.pods}/></div>;
 	}
+
+	let configContainer = 'config-container'
 
 	let rrterm;
 	if (isLoggedIn && channelSet) {
+	    configContainer += '-small';
 	    rrterm = <RRTerm channel={this.state.channel} socket={this.socket}/>;
 	}
-	
+
 	return (
 	    <div>
-	      {login}
-	      {channel}
-	      {newButton}
-	      {pods}
-	      {rrterm}
+	      <div className='user-container'>
+		{user}
+	      </div>
+	      <div className={configContainer}>
+		{login}
+		<div className='channel-container'>
+		  {newButton}
+		  {channel}
+		  {pods}
+		</div>
+	      </div>
+	      <div className='term-container'>
+		{rrterm}
+	      </div>
 	    </div>
 	);
     }
 }
 
 export default function App() {
+
+    WebFont.load({
+	google: {
+	    families: ['Inter:300,400,700', 'sans-serif', 'Material+Icons']
+	}
+    });
     return (
 	<>
 	  <Debugger/>

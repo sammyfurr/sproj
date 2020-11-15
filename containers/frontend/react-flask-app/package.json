@@ -6,6 +6,7 @@
 						"@testing-library/jest-dom": "^5.11.4",
 						"@testing-library/react": "^11.1.0",
 						"@testing-library/user-event": "^12.1.10",
+						"bufferutil": "^4.0.2",
 						"express-ws": "^4.0.0",
 						"node-pty": "^0.9.0",
 						"react": "^17.0.1",
@@ -13,7 +14,9 @@
 						"react-scripts": "4.0.0",
 						"react-xterm": "^2.0.4",
 						"socket.io-client": "^2.3.1",
+						"utf-8-validate": "^5.0.3",
 						"web-vitals": "^0.2.4",
+						"webfontloader": "^1.6.28",
 						"xterm": "^4.9.0"
 			},
 			"scripts": {
