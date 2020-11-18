@@ -1,23 +1,37 @@
-\message{ !name(midway.tex)}\documentclass[11pt]{article}
+\message{ !name(paper.tex)}\documentclass[12pt]{article}
+\usepackage{multicol}
 \usepackage{cite}
+\usepackage{listings}
+\usepackage{tikz}
+\usepackage[doublespacing]{setspace}
+
+\usepackage{titlesec}
+\newcommand{\sectionbreak}{\clearpage}
+\usetikzlibrary{positioning}
+
+\lstset{basicstyle=\ttfamily}
+
+\author{Sammy Furr}
+\title{The Development of a Collaborative Tool to Teach Debugging}
+\date{\today}
 
 \begin{document}
 
-\message{ !name(midway.tex) !offset(-3) }
+\message{ !name(paper.tex) !offset(-3) }
 
 
-\title{Midway}
-\author{Sammy Furr}
-\date{Today}
+\begin{titlepage}
 \maketitle
+\end{titlepage}
 
-Blablabla said Test~\cite{DBLP:journals/corr/OCallahanJFHNP17}.
-And lets try adding this.
+\begin{abstract}
+TODO: write an abstract
+\end{abstract}
 
-$(x-y)^{x+5}$
+\tableofcontents
+\pagebreak
 
-\bibliography{sprojbib}{}
-\bibliographystyle{plain}
+
+\message{ !name(paper.tex) !offset(168) }
+
 \end{document}
-
-\message{ !name(midway.tex) !offset(-23) }
