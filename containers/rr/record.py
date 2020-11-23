@@ -3,7 +3,8 @@ import re
 
 class Recorder:
     def __init__(self, gcc_command):
-        self.gcc_args = gcc_command.strip()[3:].strip()
+        # Strip out 'gcc' and tell gcc to output messages in JSON
+        self.gcc_args = '-fdiagnostics-format=json ' + gcc_command.strip()[3:].strip()
         self.program_name = self.parse()
 
     def parse(self):
@@ -31,7 +32,7 @@ class Recorder:
 
 
 if __name__ == '__main__':
-    d = Recorder('gcc -g -o test test.c')
+    d = Recorder('gcc -g -Wall -o test test.c')
     print(d.gcc_args, d.parse())
     print(d.build())
     print(d.record())

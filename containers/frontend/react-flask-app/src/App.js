@@ -128,6 +128,39 @@ class ChannelForm extends React.Component {
     }
 }
 
+class FileForm extends React.Component {
+    // Sends a channel api request to connect to an rr debug session
+    constructor(props) {
+	super(props);
+	this.state = {file: null};
+	this.handleFile = this.handleFile.bind(this);
+	this.handleCommand = this.handleCommand.bind(this);
+	this.handleSubmit = this.handleSubmit.bind(this);
+    }
+
+    handleFile(event) {
+	this.setState({file: event.target.value});
+    }
+
+    handleSubmit(event) {
+	console.log(this.state.file);
+	this.props.socket.emit('upload_file', {'channel': this.props.channel, 'file': this.state.file});
+	event.preventDefault();
+    }
+
+    render() {
+	return (
+	    <form className='simple-form' onSubmit={this.handleSubmit}>
+	      <label>Upload a program file</label>
+	      <div className='simple-submit'>
+		<input type="file" value={this.state.file} onChange={this.handleChange} />
+		<button type="submit"><i className="material-icons">arrow_forward_ios</i></button>
+	      </div>
+	    </form>
+	);
+    }
+}
+
 class RRTerm extends React.Component {
 
     constructor(props) {
@@ -301,7 +334,8 @@ class Debugger extends React.Component {
 	super(props);
 	this.state = {user: '',
 		      channel: '',
-		      pods: []};
+		      pods: [],
+		      newPod: null};
 	
 	this.socket = socketIOClient('http://157.230.64.84:8000');
 	
@@ -334,14 +368,14 @@ class Debugger extends React.Component {
 	post_request('/new', {name: this.state.user}).then(data => {
 	    console.log(data);
 	    if (data.channel != null){
-		this.setState({channel: data.channel});
+		this.setState({channel: data.channel, newPod: true});
 		this.socket.emit('join_channel', {'channel': this.state.channel});
 	    }
 	});
     }
 
     onChannel(c) {
-	this.setState({channel: c});
+	this.setState({channel: c, newPod: false});
 	this.socket.emit('join_channel', {'channel': this.state.channel});
     }
 
@@ -363,8 +397,7 @@ class Debugger extends React.Component {
 	let newButton;
 	if (channelSet) {
 	    channel = <span>{this.state.channel}</span>;
-	}
-	else if (isLoggedIn) {
+	} else if (isLoggedIn) {
 	    channel = <ChannelForm name={this.state.user} onChannel={this.onChannel}/>;
 	    newButton = <div><span className='title'>New Debug Session:</span><NewDebugButton onClick={this.onNew}/></div>;
 	}
@@ -376,11 +409,19 @@ class Debugger extends React.Component {
 	}
 
 	let configContainer = 'config-container'
-
+	// If the pod is new, the user still needs to record the
+	// execution of their program.  newPod is null if the user has
+	// neither joined or created a pod, true if they have just
+	// created a pod, and false if they've joined a pod already
+	// running rr
+	let ready = this.state.newPod === false;
+	let record = this.state.newPod === true;
 	let rrterm;
-	if (isLoggedIn && channelSet) {
+	if (isLoggedIn && channelSet && ready) {
 	    configContainer += '-small';
 	    rrterm = <RRTerm channel={this.state.channel} socket={this.socket}/>;
+	} else if (isLoggedIn && channelSet && ready) {
+
 	}
 
 	return (
