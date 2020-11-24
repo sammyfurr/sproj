@@ -16,7 +16,5 @@ WORKDIR /home/debug/
 RUN mkdir app
 WORKDIR /home/debug/app/
 COPY cat.c .
-COPY test.py .
-COPY server.py .
 COPY rrtranslation.py .
 COPY startup.sh .

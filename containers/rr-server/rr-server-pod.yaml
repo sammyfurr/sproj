@@ -7,8 +7,8 @@ metadata:
     app: rr-host
 spec:
   containers:
-  - name: rr-test-container
-    image: registry.digitalocean.com/sproj/rr:server-1.0
+  - name: rr-server-container
+    image: registry.digitalocean.com/sproj/rr:server-1.0.2
     securityContext:
       capabilities:
         add:

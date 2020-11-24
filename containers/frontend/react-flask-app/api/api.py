@@ -7,9 +7,9 @@ tpm = podmanager.TranslationPodManager(url='165.227.252.45', port=27017)
 um = usermanager.UserManager(url='165.227.252.45', port=27017)
 app = Flask(__name__)
 
-images = {'cat': 'registry.digitalocean.com/sproj/rr:translation-1.0',
-          'stack_smash': 'registry.digitalocean.com/sproj/rr:translation-1.0',
-          'threads': 'registry.digitalocean.com/sproj/rr:translation-1.0'}
+images = {'cat': 'registry.digitalocean.com/sproj/rr:translation-1.0.6',
+          'stack_smash': 'registry.digitalocean.com/sproj/rr:translation-1.0.6',
+          'threads': 'registry.digitalocean.com/sproj/rr:translation-1.0.6'}
 
 @app.route('/login', methods=['POST'])
 def login():

@@ -2,22 +2,14 @@ FROM  ubuntu:latest
 
 WORKDIR /tmp/
 ENV DEBIAN_FRONTEND="noninteractive"
-RUN apt-get update
-RUN apt-get install -y ccache cmake make g++-multilib gdb \
-  pkg-config coreutils python3-pexpect manpages-dev git \
-  capnproto libcapnp-dev python3-pip
+RUN apt-get update && apt-get install -y python3-pexpect python3-pip
 
-ADD rrbuild.sh ./rrbuild.sh
-RUN sh rrbuild.sh && rm -rf rr obj rrbuild.sh
-RUN useradd -ms /bin/bash debug
-USER debug
-RUN pip3 install requests pygdbmi python-socketio eventlet
-WORKDIR /home/debug/
+RUN useradd -ms /bin/bash rrserver
+USER rrserver
+RUN pip3 install requests python-socketio eventlet
+WORKDIR /home/rrserver/
 RUN mkdir app
-WORKDIR /home/debug/app/
-COPY cat.c .
-COPY test.py .
+WORKDIR /home/rrserver/app/
 COPY server.py .
-COPY rr-translation.py .
 COPY startup.sh .
 CMD ["sh", "startup.sh"]

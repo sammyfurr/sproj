@@ -17,7 +17,7 @@ class TranslationPodManager:
         config.load_kube_config()
         self.v1 = client.CoreV1Api()
         
-    def create_pod(self, names, image='registry.digitalocean.com/sproj/rr:translation-1.0'):
+    def create_pod(self, names, image='registry.digitalocean.com/sproj/rr:translation-1.0.6'):
         dep = {'apiVersion': 'v1',
                'kind': 'Pod',
                'metadata': {'labels': {'purpose': 'translate-rr'}},

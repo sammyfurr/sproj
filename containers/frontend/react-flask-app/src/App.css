@@ -89,3 +89,21 @@ button {
     height: 70vh;
     width: 100%;
 }
+
+.rr-term {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.rr-term > div {
+    margin: .5rem;
+}
+
+.source-view {
+    width: 20rem;
+    height: 20rem;
+}
+
+
