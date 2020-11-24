@@ -9,27 +9,26 @@ app = socketio.WSGIApp(sio)
 def join_channel(sid, data):
     sio.enter_room(sid, data['channel'])
 
-@sio.on('rr command')
+@sio.on('rr_command')
 def on_rr_command(sid, data):
-    print('Received rr command:')
     data['sid'] = sid
-    print(data)
-    print('Emitting...')
-    sio.emit('rr command', data, room=data['channel'])
+    try:
+        sio.emit('rr_command', data, room=data['channel'])
+    except:
+        # If there's an error with the data or the channel, there's
+        # not much we can do
+        pass
 
-@sio.on('rr response')
+@sio.on('rr_response')
 def on_rr_response(sid, data):
-    print('Recieved rr response:')
-    print(data)
-    print('Emitting...')
-    sio.emit('rr response', data, room=data['channel'])
+        sio.emit('rr_response', data, room=data['channel'])
 
 @sio.event
 def connect(sid, environ):
-    print('connect ', sid)
+    print('Connect: ', sid)
 
 @sio.event
 def disconnect(sid):
-    print('disconnect ', sid)
+    print('Disconnect: ', sid)
 
 eventlet.wsgi.server(eventlet.listen(('', 8000)), app)

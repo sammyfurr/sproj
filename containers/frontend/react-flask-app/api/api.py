@@ -7,6 +7,10 @@ tpm = podmanager.TranslationPodManager(url='165.227.252.45', port=27017)
 um = usermanager.UserManager(url='165.227.252.45', port=27017)
 app = Flask(__name__)
 
+images = {'cat': 'registry.digitalocean.com/sproj/rr:translation-1.0',
+          'stack_smash': 'registry.digitalocean.com/sproj/rr:translation-1.0',
+          'threads': 'registry.digitalocean.com/sproj/rr:translation-1.0'}
+
 @app.route('/login', methods=['POST'])
 def login():
     try:
@@ -22,10 +26,10 @@ def login():
                 # This isn't redundant, the user could have been added
                 # by a different instance of api.py in between our
                 # initial get_user and add_user
-                return {'error': 'user_exists'}
+                return {'error': 'User already exists.'}
         return {'name': name}
     except:
-        return {'error': 'internal_error'}
+        return {'error': 'Internal Error'}
 
 @app.route('/channel', methods=['POST'])
 def channel():
@@ -36,9 +40,9 @@ def channel():
             tpm.link_pod_to_users(channel, [name])
             return {'channel': channel}
         except database.NoMatchingChannelError:
-            return {'error': 'channel_error'}
+            return {'error': 'There is no open session with id: "' + channel + '".'}
     except:
-        return {'error': 'internal_error'}
+        return {'error': 'Internal Error'}
 
 @app.route('/pods', methods=['POST'])
 def pods():
@@ -47,10 +51,29 @@ def pods():
         pods = tpm.get_pods_by_user(user)
         return pods
     except:
-        return {'error': 'internal_error'}
+        return {'error': 'Internal Error'}
 
 @app.route('/new', methods=['POST'])
 def new():
-    name = request.get_json()['name']
-    channel = tpm.create_pod([name])
-    return {'channel': channel}
+    try:
+        name = request.get_json()['name']
+        program = request.get_json()['program']
+        image = images[program]
+        channel = tpm.create_pod([name])
+        return {'channel': channel}
+    except:
+        return {'error': 'Internal Error'}
+
+@app.route('/delete', methods=['POST'])
+def delete():
+    try:
+        name = request.get_json()['name']
+        channel = request.get_json()['channel']
+        users = tpm.get_users_by_pod(channel)
+        if len(users) <= 1:
+            tpm.delete_pod(channel)
+        else:
+            tpm.unlink_pod_from_users(channel, [name])
+        return {'deleted': True}
+    except:
+        return {'error': 'Internal Error'}

@@ -17,11 +17,11 @@ class TranslationPodManager:
         config.load_kube_config()
         self.v1 = client.CoreV1Api()
         
-    def create_pod(self, names):
+    def create_pod(self, names, image='registry.digitalocean.com/sproj/rr:translation-1.0'):
         dep = {'apiVersion': 'v1',
                'kind': 'Pod',
                'metadata': {'labels': {'purpose': 'translate-rr'}},
-               'spec': {'containers': [{'image': 'registry.digitalocean.com/sproj/rr:translation-channel',
+               'spec': {'containers': [{'image': image,
                                         'name': 'rr-test-container',
                                         'command': ['sh'],
                                         'args': ['startup.sh'],
@@ -36,7 +36,6 @@ class TranslationPodManager:
         # Wait to return the channel until the pod is live and read to
         # recieve incomming communication
         status = self.v1.read_namespaced_pod_status(channel, 'default').status.container_statuses
-        # 
         while status == None or status[0].state.running == None:
             time.sleep(1)
             status = self.v1.read_namespaced_pod_status(channel, 'default').status.container_statuses
@@ -53,14 +52,6 @@ class TranslationPodManager:
         time.sleep(60)
         self.dbc.delete_pod(self.dbc.get_pod_by_channel(channel))
         return
-        # while True:
-        #     try:
-        #         print(channel)
-        #         print(self.v1.read_namespaced_pod_status(channel, 'default').status.container_statuses[0].state.terminated)
-        #         await asyncio.sleep(1)
-        #     except:
-        #         self.dbc.delete_pod(self.dbc.get_pod_by_channel(channel))
-        #         break
 
     def link_pod_to_users(self, channel, names):
         pod = self.dbc.get_pod_by_channel(channel)
@@ -78,3 +69,9 @@ class TranslationPodManager:
         active = [p['channel'] for p in pods]
         inactive = []
         return {'active': active, 'inactive': inactive}
+
+    def get_users_by_pod(self, channel):
+        pid = self.dbc.get_pod_by_channel(channel);
+        uids = self.dbc.get_users_by_pod(pid);
+        users = [u['name'] for u in uids]
+        return users

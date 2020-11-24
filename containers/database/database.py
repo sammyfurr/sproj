@@ -56,6 +56,9 @@ class DatabaseController:
         user = self.users.find_one({'name': name})
         return user['_id']
 
+    def get_users_by_pod(self, pid):
+        return self.users.find({"pods": pid})
+
     # Pod Methods
     
     def add_pod(self, uids=[]):

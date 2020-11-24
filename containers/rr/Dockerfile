@@ -18,5 +18,5 @@ WORKDIR /home/debug/app/
 COPY cat.c .
 COPY test.py .
 COPY server.py .
-COPY rr-translation.py .
+COPY rrtranslation.py .
 COPY startup.sh .
