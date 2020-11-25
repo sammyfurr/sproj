@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: rr-frontend
+  labels:
+    app: frontend
+spec:
+  containers:
+  - name: rr-frontend-container
+    image: registry.digitalocean.com/sproj/rr:frontend-latest-1.0.1
+  restartPolicy: OnFailure

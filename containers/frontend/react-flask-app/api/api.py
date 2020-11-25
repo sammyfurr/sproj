@@ -3,8 +3,8 @@ import podmanager
 import usermanager
 import database
 
-tpm = podmanager.TranslationPodManager(url='165.227.252.45', port=27017)
-um = usermanager.UserManager(url='165.227.252.45', port=27017)
+tpm = podmanager.TranslationPodManager(url='mongodb://database-load-balancer', port=27017)
+um = usermanager.UserManager(url='mongodb://database-load-balancer', port=27017)
 app = Flask(__name__)
 
 @app.route('/login', methods=['POST'])
