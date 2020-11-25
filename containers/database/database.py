@@ -25,6 +25,7 @@ class DatabaseController:
         self.db = self.client.debugger
         self.users = self.db.users
         self.pods = self.db.pods
+        self.examples = self.db.examples
         self.min_channel = 10000
         self.max_channel = 99999
         self.max_channels = self.max_channel - self.min_channel
@@ -107,3 +108,8 @@ class DatabaseController:
                                {'$pull': {'pods': pod}})
         self.pods.update_one({'_id': pod},
                              {'$pull': {'users': {'$in': uids}}})
+
+    # Example Methods
+
+    def get_examples(self):
+        return db.examples.find({})

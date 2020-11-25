@@ -9,3 +9,4 @@ client = MongoClient(url, port)
 
 client.debugger.users.create_index('name', unique=True)
 client.debugger.pods.create_index('channel', unique=True)
+client.debugger.examples.create_index('name', unique=True)

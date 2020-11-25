@@ -3,6 +3,7 @@ from pprint import pprint
 import socketio
 import traceback
 import sys
+import re
 
 class DissallowedError(Exception):
     """Raised when the user tries to execute a banned command."""
@@ -12,19 +13,24 @@ class RRInterface:
     def __init__(self, session=None):
         self.gdbmi = GdbController(command=["rr", "replay", "--", "--nx", "--quiet", "--interpreter=mi2"])
         self.init_message = self.console_output(self.get_rr_response())
+        
+        # Disable hardware watchpoints
+        # self.gdbmi.write('set can-use-hw-watchpoints 0')
         self.timeline = []
 
     def command_forbidden(self, command):
         # Allowing shell commands is a security risk, useless for the
-        # purpose of the application, and annoying to handle
-        return command == 'shell'
+        # purpose of the application, and annoying to handle.
+        # Hardware watchpoints must stay disabled since too many users
+        # overwhelms the capability of the CPU
+        return command == 'shell' # or re.search('(set can-use-hw-watchpoints.*)', command) != None
         
     def exited(self, response):
         return len(response) > 2 and response[-2]['message'] == 'thread-group-exited'
 
     def end(self, response):
         last = response[-1]['message']
-        return len(response) == 1 or last == 'stopped' or last == 'done' or last == 'error'
+        return len(response) == 1 or last == 'stopped' or last == 'done' or last == 'error' or last == 'running'
 
     def get_rr_response(self):
         return self.gdbmi.get_gdb_response()
@@ -38,11 +44,13 @@ class RRInterface:
     def console_output(self, response):
         output = []
         for r in response:
-            if r['type'] == 'console' or r['type'] == 'output':
+            if r['type'] == 'console':
                 output.append(r['payload'])
+            if r['type'] == 'output':
+                output.append(r['payload'] + '\n')
             if r['message'] == 'error':
                 output.append(r['payload']['msg'])
-        return ''.join(output).replace("\\n", "\n").replace("\\t", "\t")
+        return ''.join(output).replace('\\n', '\n').replace('\\t', '\t')
     
     def write(self, command):
         if self.command_forbidden(command):
@@ -58,6 +66,7 @@ class RRInterface:
 
 sio = socketio.Client()
 rri = RRInterface()
+
 channel = None
 current_source = ''
 
@@ -85,12 +94,17 @@ def on_rr_command(data):
         else:
             # If it's different, read the contents of the file, and
             # send that along with the file name and line number
-            with open(s['path'], 'r') as f:
-                text = f.read()
-                # current_source = s['path']
-                response['source'] = {'file_name': s['file'],
-                                      'current_line': s['line'],
-                                      'contents': text}
+            try:
+                with open(s['path'], 'r') as f:
+                    text = f.read()
+                    # current_source = s['path']
+                    response['source'] = {'file_name': s['file'],
+                                          'current_line': s['line'],
+                                          'contents': text}
+            except:
+                response['source'] = {'file_name': None,
+                                      'current_line': '0',
+                                      'contents': None}
         body['response'] = response
     except DissallowedError:
         body['response'] = {'output': 'Dissalowed command: "' + data['command'] + '". Try "help".'}

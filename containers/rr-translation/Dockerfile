@@ -15,6 +15,4 @@ RUN pip3 install requests pygdbmi python-socketio eventlet
 WORKDIR /home/debug/
 RUN mkdir app
 WORKDIR /home/debug/app/
-COPY cat.c .
 COPY rrtranslation.py .
-COPY startup.sh .

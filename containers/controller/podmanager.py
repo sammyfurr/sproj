@@ -75,3 +75,10 @@ class TranslationPodManager:
         uids = self.dbc.get_users_by_pod(pid);
         users = [u['name'] for u in uids]
         return users
+
+    def get_examples(self):
+        examples = self.dbc.examples.find()
+        if examples == None:
+            return {}
+        else:
+            return {e['name']: e['container'] for e in examples}

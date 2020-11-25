@@ -194,6 +194,7 @@ class RRTerm extends React.Component {
 	// Register a new response handler with the socket defined in
 	// Debugger.  
 	this.props.socket.on('rr_response', (data) => {
+	    console.log(data)
 	    if(data.from !== this.props.socket.id){
 		// If the command originated from a different client,
 		// display it.  Disable input so the user doesn't mess
@@ -294,7 +295,7 @@ function NewDebugButton(props) {
     const program = props.program
     return (
 	<button onClick={() => {props.onClick(program)}}>
-	  <span>{program}</span>
+	  <span className={'button-label'}>{program}</span>
 	</button>
     );
 }
@@ -310,6 +311,14 @@ function DeleteButton(props) {
 	<button onClick={() => {props.onClick(pod)}}>
 	  {icon}
 	</button>
+    );
+}
+
+function ExampleList(props) {
+    const examples = props.examples;
+    const listItems = examples.map((example) => <li key={example}><NewDebugButton onClick={props.onClick} program={example} /></li>)
+    return (
+	<ul>{listItems}</ul>
     );
 }
 
@@ -329,7 +338,9 @@ class Debugger extends React.Component {
 	super(props);
 	this.state = {user: '',
 		      channel: '',
-		      pods: []};
+		      examples: [],
+		      pods: []
+		     };
 	
 	this.socket = socketIOClient('http://157.230.64.84:8000');
 	
@@ -350,6 +361,13 @@ class Debugger extends React.Component {
 		this.setState({pods: data.active});
 	    } else if (data.error != null) {
 		alert('Error fetching list of active pods: ' + data.error);
+	    }
+	});
+	post_request('/examples', {name: this.state.user}).then(data => {
+	    if(data.examples != null) {
+		this.setState({examples: data.examples});
+	    } else if (data.error != null) {
+		alert('Error fetching example pods: ' + data.error);
 	    }
 	});
     }
@@ -404,10 +422,12 @@ class Debugger extends React.Component {
 	}
 
 	const channelSet = this.state.channel !== '';
+	
 	// Channel to use with socket, identifies session pod.
 	let channel;
-	// Button to create a new pod.
-	let newButton;
+	// Example pods
+	let examples;
+	
 	if (channelSet) {
 	    channel = (
 		<div>
@@ -415,22 +435,15 @@ class Debugger extends React.Component {
 		  <span>{this.state.channel}</span>
 		</div>
 	    );
+	    examples = null;
 	} else if (isLoggedIn) {
 	    channel = <ChannelForm name={this.state.user} onChannel={this.onChannel}/>;
 
-	    // Currently, users have three test programs to choose from.
-	    newButton = (
+	    // Currently, users have a few test programs to choose from.
+	    examples = (
 		<div>
-		  <span className='title'>New Debug Session:</span>
-		  <div className='new-session'>
-		    <NewDebugButton onClick={this.onNew} program={'cat'}/>
-		  </div>
-		  <div className='new-session'>
-		    <NewDebugButton onClick={this.onNew} program={'stack_smash'}/>
-		  </div>
-		  <div className='new-session'>
-		    <NewDebugButton onClick={this.onNew} program={'threads'}/>
-		  </div>
+		  <span className='title'>New Session:</span>
+		  <ExampleList examples={this.state.examples} onClick={this.onNew}/>
 		</div>
 	    );
 	}
@@ -467,7 +480,7 @@ class Debugger extends React.Component {
 	      <div className={configContainer}>
 		{login}
 		<div className='channel-container'>
-		  {newButton}
+		  {examples}
 		  {channel}
 		  {pods}
 		</div>

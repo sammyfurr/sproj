@@ -106,4 +106,7 @@ button {
     height: 20rem;
 }
 
-
+.button-label {
+    font-size: 1rem;
+    font-color: #000000;
+}

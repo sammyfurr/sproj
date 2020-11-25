@@ -7,10 +7,6 @@ tpm = podmanager.TranslationPodManager(url='165.227.252.45', port=27017)
 um = usermanager.UserManager(url='165.227.252.45', port=27017)
 app = Flask(__name__)
 
-images = {'cat': 'registry.digitalocean.com/sproj/rr:translation-1.0.6',
-          'stack_smash': 'registry.digitalocean.com/sproj/rr:translation-1.0.6',
-          'threads': 'registry.digitalocean.com/sproj/rr:translation-1.0.6'}
-
 @app.route('/login', methods=['POST'])
 def login():
     try:
@@ -58,8 +54,10 @@ def new():
     try:
         name = request.get_json()['name']
         program = request.get_json()['program']
-        image = images[program]
-        channel = tpm.create_pod([name])
+        examples = tpm.get_examples()
+        container = examples[program]
+        print(container)
+        channel = tpm.create_pod([name], container)
         return {'channel': channel}
     except:
         return {'error': 'Internal Error'}
@@ -75,5 +73,13 @@ def delete():
         else:
             tpm.unlink_pod_from_users(channel, [name])
         return {'deleted': True}
+    except:
+        return {'error': 'Internal Error'}
+
+@app.route('/examples', methods=['POST'])
+def examples():
+    try:
+        examples = tpm.get_examples()
+        return {'examples': list(examples.keys())}
     except:
         return {'error': 'Internal Error'}
