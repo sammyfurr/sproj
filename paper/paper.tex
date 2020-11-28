@@ -131,7 +131,7 @@ debugger, students learn techniques and paradigms necessary to use all
 debuggers effectively.
 \pagebreak
 
-\subsection{Project Components}
+\subsection{Tools Used}
 
 \begin{figure}[h!]
 
@@ -152,11 +152,11 @@ the collaborative debugger.  The debugger consists of:
   \item A pod for each debugging instance which runs the rr debugger
     (\ref{rr}).  These communicate directly with users through
     WebSocket server pods. (\ref{socketio}).
-  \item Pods running a frontend server written in Node which works in
-    tandem with an API server created using Flask (\ref{flask/node}).
-    The API server manages creation and destruction of debug sessions,
-    as well as authentication.
-  \item A MongoDB database.
+  \item Pods running a frontend server written in Node.js which works
+    in tandem with an API server created using Flask
+    (\ref{flask/node}).  The API server manages creation and
+    destruction of debug sessions, as well as authentication.
+  \item A MongoDB (\ref{mongodb}) database.
   \end{enumerate}
 \end{enumerate}
 
@@ -233,7 +233,21 @@ clients.
 
 \subsubsection{pygdbmi}
 
-
+In order to ``support the development of systems which use the
+debugger as just one small component of a larger system'', GDB
+provides a machine-oriented interface called GDB/MI \cite{gdbman}. rr
+supports interaction through GDB/MI, and using the interface was a
+natural choice for the collaborative debugger.  In addition to being
+far easier to interact with from within a program, the structured,
+machine-friendly output of GDB/MI lends itself in particular to future
+development of visualization aids in the collaborative debugger.
+\par
+To parse rr output into Python dictionaries and to easily control rr
+as a subprocess, pygdbmi \cite{pygdbmi} is used in each debugging pod.
+pygdbmi's abstraction simplifies programatically controlling rr.  A
+pod can receive a command from the client, pass it to rr, and respond
+without having to deal with parsing GDB/MI output or managing the rr
+process.
 
 \subsubsection{Socket.IO}\label{socketio}
 
@@ -243,14 +257,74 @@ library that extends WebSockets.  It provides backup incase a
 WebSocket connection cannot be established, enables automatic
 reconnection and disconnection detection, and adds support for
 namespaces \cite{socketio}.  The collaborative debugger uses the
-standard Javascript implementation of Socket.IO on the client side.
+standard JavaScript implementation of Socket.IO on the client side.
 Messages are passed through a server to individual debugging pods,
 both of which use the Python implementation of Socket.IO,
 python-socket.io \cite{python_socketio}.
 
-\subsubsection{Flask and Node}\label{flask/node}
+\subsubsection{MongoDB}\label{mongodb}
 
-\subsubsection{React and Xterm.js}\label{react}
+The collaborative debugger uses a database to store information about
+users, pods, and example debugging sessions.  Due to it's speed of
+deployment and natural interaction with the object-oriented languages
+used to create the project, MongoDB was chosen as database software
+\cite{mongodb}.
+
+\subsubsection{Flask and Node.js}\label{flask/node}
+
+The primary server for the collaborative debugger is split into two
+sections: a simple Node.js \cite{node} server that serves the frontend
+webapp, and an API server created using Flask \cite{flask}.  While in
+development, the builtin React (see next section) development server
+is used to serve the frontend.  This makes debugging the frontend far
+easier.
+\par
+
+An API server is necessary to authenticate users and to provide a
+means to create/delete debugging sessions.  Since the rest of the
+backend was created using Python, Flask was chosen to create the API
+server.  Flask is a lightweight web application framework which lends
+itself perfectly to interacting with the Python MongoDB and Kubernetes
+APIs.
+
+\subsubsection{React}\label{react}
+
+React is JavaScript library that simplifies creating user interfaces
+and managing state \cite{react}.  React's state management is of
+particular importance to the collaborative debugger's frontend.  State
+constantly changes as users create/delete debugging sessions, join
+existing sessions, and communicate with rr.  React allows classes to
+encapsulate components such as a list of existing debugging sessions,
+a view of the current program's source code, and the terminal
+interface with rr.  Instances of these classes maintain state
+and update efficiently.
+\par
+The frontend makes extensive use of JSX, syntax which allows the
+inclusion of segments of HTML code within a React app written in
+JavaScript.  This makes it easy for each component of the one-page
+webapp to hide/show subcomponents as state changes.
+
+\subsubsection{Monaco and Xterm.js}\label{xtermjs/monaco}
+
+After joining or creating a debugging session, users spend most of
+their time interacting collaboratively with rr.  Their primary
+interface to rr is through Xterm.js, a frontend component that makes
+it easy to emulate terminal behavior in the browser \cite{xtermjs}.
+With a few control methods, it is simple to provide a terminal
+interface to rr that is virtually indistinguishable from a local
+session.  By using the Xterm.js based interface, students can learn to
+use rr (and by extension gdb) collaboratively, and directly translate
+that knowledge to individual work.
+\par
+
+In addition to the terminal interface, the frontend shows a view of
+the current source file being debugged.  The Monaco Editor
+\cite{monaco} is used to display this source view.  Though more
+complex than is strictly necessary to display code, Monaco makes it
+easy to format and syntax-highlight.  Using Monaco also simplifies the
+future addition of editing source code, should the need arise.
+React's state management allows updating text in the editor as
+efficiently as possible.
 
 \subsection{Project Overview}
 
