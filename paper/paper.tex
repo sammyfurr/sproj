@@ -1,14 +1,76 @@
 \documentclass[12pt]{article}
 \usepackage{multicol}
 \usepackage{cite}
-\usepackage{listings}
+
 \usepackage{graphicx}
 \usepackage[doublespacing]{setspace}
 \usepackage{hyperref}
 \usepackage{titlesec}
 \newcommand{\sectionbreak}{\clearpage}
 
-\lstset{basicstyle=\ttfamily}
+\usepackage[dvipsnames]{xcolor}
+\usepackage{listingsutf8}
+
+% From: https://gordonlesti.com/custom-code-highlighting-in-latex/
+
+\lstdefinelanguage{Dockerfile}
+{
+  morekeywords={FROM, RUN, CMD, LABEL, MAINTAINER, EXPOSE, ENV, ADD, COPY,
+    ENTRYPOINT, VOLUME, USER, WORKDIR, ARG, ONBUILD, STOPSIGNAL, HEALTHCHECK,
+    SHELL},
+  morecomment=[l]{\#},
+  morestring=[b]"
+}
+
+
+\newcommand\YAMLcolonstyle{\color{red}\mdseries}
+\newcommand\YAMLkeystyle{\color{black}\bfseries}
+\newcommand\YAMLvaluestyle{\color{blue}\mdseries}
+
+% From: https://tex.stackexchange.com/questions/152829/how-can-i-highlight-yaml-code-in-a-pretty-way-with-listings
+
+\makeatletter
+
+% here is a macro expanding to the name of the language
+% (handy if you decide to change it further down the road)
+\newcommand\language@yaml{yaml}
+
+\expandafter\expandafter\expandafter\lstdefinelanguage
+\expandafter{\language@yaml}
+{
+  keywords={true,false,null,y,n},
+  keywordstyle=\color{darkgray}\bfseries,
+  basicstyle=\YAMLkeystyle,                                 % assuming a key comes first
+  sensitive=false,
+  comment=[l]{\#},
+  morecomment=[s]{/*}{*/},
+  commentstyle=\color{purple}\ttfamily,
+  stringstyle=\YAMLvaluestyle\ttfamily,
+  moredelim=[l][\color{orange}]{\&},
+  moredelim=[l][\color{magenta}]{*},
+  moredelim=**[il][\YAMLcolonstyle{:}\YAMLvaluestyle]{:},   % switch to value style at :
+  morestring=[b]',
+  morestring=[b]",
+  literate =    {---}{{\ProcessThreeDashes}}3
+                {>}{{\textcolor{red}\textgreater}}1     
+                {|}{{\textcolor{red}\textbar}}1 
+                {\ -\ }{{\mdseries\ -\ }}3,
+}
+
+% switch to key style at EOL
+\lst@AddToHook{EveryLine}{\ifx\lst@language\language@yaml\YAMLkeystyle\fi}
+\makeatother
+
+\newcommand\ProcessThreeDashes{\llap{\color{cyan}\mdseries-{-}-}}
+
+\lstset{basicstyle=\linespread{0.5}\ttfamily,
+  showstringspaces=false,
+  commentstyle=\color{red},
+  keywordstyle=\color{blue},
+  inputencoding=utf8,
+  extendedchars=true
+}
+
 \graphicspath{{./images/}}
 
 \author{Sammy Furr}
@@ -149,9 +211,9 @@ the collaborative debugger.  The debugger consists of:
   interface to the end user.
 \item A distributed backend managed by Kubernetes (\ref{k8s}), split into three parts:
   \begin{enumerate}
-  \item A pod for each debugging instance which runs the rr debugger
+  \item A Pod for each debugging instance which runs the rr debugger
     (\ref{rr}).  These communicate directly with users through
-    WebSocket server pods. (\ref{socketio}).
+    WebSocket server Pods. (\ref{socketio}).
   \item Pods running a frontend server written in Node.js which works
     in tandem with an API server created using Flask
     (\ref{flask/node}).  The API server manages creation and
@@ -165,13 +227,13 @@ the collaborative debugger.  The debugger consists of:
 Kubernetes is the defacto standard in container orchestration
 software.  It provides a layer of abstraction on top of normal
 containers, like those created by Docker.  By bundling one or more
-closely linked containers into a ``pod'', Kubernetes is able to manage
+closely linked containers into a ``Pod'', Kubernetes is able to manage
 deployment and re-deployment of applications running inside
-containers.  It is trivial to create new pods, or to create multiple
-pods running the same application as needed within a Kubernetes
-cluster \cite{k8s}.  The speed at which even relatively large pods can be created
+containers.  It is trivial to create new Pods, or to create multiple
+Pods running the same application as needed within a Kubernetes
+cluster \cite{k8s}.  The speed at which even relatively large Pods can be created
 and the inherent security provided by containerization drove the
-decision to create a new pod on the fly for each debugging instance in
+decision to create a new Pod on the fly for each debugging instance in
 the collaborative debugger.
 \par
 
@@ -208,7 +270,7 @@ example with the knowledge that normally non-deterministic events will
 be repeatable, and that any input they provide to the program will be
 exactly replicated.  With the collaborative debugger, teachers can
 record a program's execution and design a debugging lesson which
-students can work on together.  The repeatablity of rr means that
+students can work on together.  The repeatability of rr means that
 students can focus on debugging, and teachers can create as specific
 examples as they please.
 
@@ -218,7 +280,7 @@ In comparison to solutions like PANDA\cite{10.1145/2843859.2843867}
 that rely on capturing the entire state of of a virtual machine to
 replay execution, rr records and replays faster, produces far smaller
 files, and doesn't force execution inside of a
-VM.\cite{DBLP:journals/corr/OCallahanJFHNP17} The tradeoff for these
+VM.\cite{DBLP:journals/corr/OCallahanJFHNP17} The trade off for these
 benefits are two major system limitations: rr is only compatible with
 the Linux kernel, and it's deterministic recording and replay relies
 on a feature that is only found on modern \textit{Intel} x86 CPUs.
@@ -243,29 +305,29 @@ machine-friendly output of GDB/MI lends itself in particular to future
 development of visualization aids in the collaborative debugger.
 \par
 To parse rr output into Python dictionaries and to easily control rr
-as a subprocess, pygdbmi \cite{pygdbmi} is used in each debugging pod.
+as a subprocess, pygdbmi \cite{pygdbmi} is used in each debugging Pod.
 pygdbmi's abstraction simplifies programatically controlling rr.  A
-pod can receive a command from the client, pass it to rr, and respond
+Pod can receive a command from the client, pass it to rr, and respond
 without having to deal with parsing GDB/MI output or managing the rr
 process.
 
 \subsubsection{Socket.IO}\label{socketio}
 
 To speed communication, the collaborative debugger uses WebSockets to
-directly connect web clients and the pods running rr.  Socket.IO is a
+directly connect web clients and the Pods running rr.  Socket.IO is a
 library that extends WebSockets.  It provides backup incase a
 WebSocket connection cannot be established, enables automatic
 reconnection and disconnection detection, and adds support for
 namespaces \cite{socketio}.  The collaborative debugger uses the
 standard JavaScript implementation of Socket.IO on the client side.
-Messages are passed through a server to individual debugging pods,
+Messages are passed through a server to individual debugging Pods,
 both of which use the Python implementation of Socket.IO,
 python-socket.io \cite{python_socketio}.
 
 \subsubsection{MongoDB}\label{mongodb}
 
 The collaborative debugger uses a database to store information about
-users, pods, and example debugging sessions.  Due to it's speed of
+users, Pods, and example debugging sessions.  Due to it's speed of
 deployment and natural interaction with the object-oriented languages
 used to create the project, MongoDB was chosen as database software
 \cite{mongodb}.
@@ -326,24 +388,247 @@ future addition of editing source code, should the need arise.
 React's state management allows updating text in the editor as
 efficiently as possible.
 
-\subsection{Project Overview}
-
-TODO: a brief overview linking aspects of the project to background
-research discussed above.
-
 \section{Design}
 
-TODO: the big piece of writing, detailing components of the project,
-the system as a whole, and motivations for design choices.
+The collaborative debugger consists of a distributed Kubernetes
+backend and frontend React webapp.  Kubernetes was chosen for the
+backend primarally so that a Pod could be created dynamically for each
+debugging session.  The design of the backend is heavily distributed,
+allowing individual components to be modified without the whole system
+needing to be reconfigured.
+
+\begin{figure}[h!]
+
+  \includegraphics[scale=.9]{detailed_system}
+  \centering
+  \caption{Detailed Overview of the Collaborative Debugger}
+  \label{debugger:detailedoverview}
+\end{figure}
+
+Each backend component of the collaborative debugger runs in it's own
+individual Pod.  There are two different classes of Pods in the
+collaborative debugger:
+
+\begin{enumerate}
+\item Statically created Pods.  These are the \textit{RR Message
+    Server Pods}, the \textit{Frontend/API Server Pods}, and the
+  \textit{Database Pod}.  This class of Pods are manually created when
+  the cluster that will run the backend is first initialized.  The RR
+  Message Server Pods and Frontend/API Server Pods may be created
+  using Deployments \cite{k8s_docs} to allow later scaling, where
+  multiple Pods running the same application may be created to
+  facilitate increased load.
+\item Dynamically created Pods.  This class of Pod contains the
+  individual instances of \textit{RR Debug Pods} that are created on
+  request by the API server.  When a client requests a new debug
+  session, the API server uses the Kubernetes API to create a new Pod
+  based on an existing template, gives the Pod a unique identifier,
+  and associates it in the database with the requesting client.
+\end{enumerate}
+
+These Pods communicate with other Pods in the cluster and with the
+outside world through Services.  The Kubernetes documentation defines
+a Service as ``an abstraction which defines a logical set of Pods and
+a policy by which to access them'' \cite{k8s_docs}.  In the
+collaborative debugger, these Services manifest as:
+
+\begin{enumerate}
+\item The \textit{Database ClusterIP}: a ClusterIP, which exposes the
+  Database Pod only inside the cluster.  The only component that makes
+  use of this ClusterIP is the API server, which uses it primarily to
+  communicate information about users and RR Debug Pods with the
+  database.
+\item The \textit{RR Message Load Balancer}: a Load Balancer, which
+  exposes the RR Message Server Pods to the outside world.  Using
+  Socket.IO, clients send commands to and recieve responses from
+  individual RR Debug Pods through the RR Message Server Pods.
+\item The \textit{Frontend Load Balancer}: another Load Balancer,
+  which exposes the Frontend/API Server Pods to the outside world.
+  Clients request the frontend webapp and send api requests/recieve
+  api responses through this Load Balancer.
+\end{enumerate}
+
+The frontend webapp dynamically updates as the user requests new debug
+sessions, issues commands to rr, and visits new source files.  A user
+can be part of multiple debug sessions simultaneously.  Each debug
+session is assigned at 5 digit identifier at creation, which is used
+to join sessions in progress.
+\par
+
+Each component of the backend and
+frontend will be discussed in depth in the following sections.
+
+\subsection{Configuration and Setup}
+
+Configuration and setup of the collaborative debugger is relatively
+simple.  After a Kubernetes cluster is created (this is made easier by
+using a Managed Kubernetes service) Pods and Services are created
+using various configuration files.  Services should be created first,
+so that Pods can be created which rely on access to Services in order
+to run.  The following sections outline the process of creating a
+cluster, Pods, and Services, with a focus on statically created Pods.
+The process of building images for building dynamically created Pods
+is identical, but the process of starting the Pods is more
+complicated.  This process will be discussed in-depth in the section
+on the API server \ref{api}.
+
+\subsubsection{Cluster Selection and Configuration}
+
+Though Docker and by extension Kubernetes aim to be largely
+platform-agnostic, the requirements of rr impose some restrictions on
+cluster setup and configuration.  Clusters, even those running inside
+a VM, must be run on machines using relatively modern Intel x86 CPUs
+(Nehalem and beyond).  The clusters must run on an operating system
+using Linux kernel version 3.11 or higher \cite{rr-repo}.  The reasons
+for these restrictions are discussed in the section on rr (\ref{rr}).
+Finally, in order for rr to be able to work efficiently, the
+\lstinline{kernel.perf_event_paranoid} parameter must be set to 1
+\cite{rr-repo}.  This should be done on every node in the cluster
+which will run RR Debug Pods.  For the purposes of development, it has
+been set to 1 on all nodes in the collaborative debugger cluster.
+
+\subsubsection{Creating Pods}
+
+\begin{figure}[h!]
+
+  \includegraphics[scale=.9]{pod_creation}
+  \centering
+  \caption{The Pod Creation Process}
+  \label{podcreation:overview}
+\end{figure}
+
+Pods are created in five steps:
+
+\begin{enumerate}
+\item A \lstinline{Dockerfile} is used to build a new Docker container
+  image from various pieces of source code, scripts, and a base image
+  (such as the official MongoDB image or official Ubuntu image).  The
+  Dockerfile also contains instructions to install necessary packages,
+  run build scripts, and create file structures in the image.
+\item The Docker image is tagged and uploaded to a private container
+  registry.
+\item A Pod configuration schema is defined/updated with details of
+  the corresponding image's tag and any necessary Pod-specific
+  settings/startup commands.
+\item The Pod configuration schema is applied, either statically or
+  dynamically.  When the schema is applied, Kubernetes pulls the image
+  from the container registry and creates a new Pod according to the
+  schema, running any startup commands if provided.
+\item If Pod creation is successful, the result is a new Pod running
+  in the cluster.
+\end{enumerate}
+
+\paragraph{1. Docker Container Creation}
+
+Docker containers are created using a Dockerfile.  The Dockerfile used
+to create the container image for the RR Message
+Server is shown below.\\
+
+\begin{lstlisting}[language=Dockerfile,caption={RR Message Server Dockerfile},captionpos=b]
+# Base Image
+FROM  ubuntu:latest
+
+# Package Installation
+WORKDIR /tmp/
+ENV DEBIAN_FRONTEND="noninteractive"
+RUN apt-get update && apt-get install -y \
+python3-pexpect python3-pip
+
+# User Creation
+RUN useradd -ms /bin/bash rrserver
+USER rrserver
+
+# File structure creation/app setup
+RUN pip3 install requests python-socketio \
+eventlet
+WORKDIR /home/rrserver/
+RUN mkdir app
+WORKDIR /home/rrserver/app/
+COPY server.py .
+COPY startup.sh .
+
+# Startup command
+CMD ["sh", "startup.sh"]
+\end{lstlisting}
+
+The build process for each collaborative debugger Docker image follows
+the same structure as the one outlined in the Dockerfile above:
+
+\begin{enumerate}
+\item The base image is defined. The RR Message Server and RR Debug
+Pod images are based on the latest Ubuntu image.  This is particuarly
+necessary for the RR Debug Pod image, as rr's low-level nature
+facilitates frequent updates as changes are made to the Linux kernel.
+The Frontend/API Server image is based on the latest Node image, and
+the Database image is based on the latest MongoDB image.
+\item Second, any necessary packages are installed.  For the RR Debug
+  Pod image, rr is compiled from source and installed.
+\item A non-root user is created if necessary.
+\item Program files are copied over and a file structure is created.
+  Packages that don't rely on the base images builtin package manager
+  are installed here.
+\item A startup command is defined.
+\end{enumerate}
+
+Each line in a Dockerfile corresponds to a layer in the built image.
+This build order minimizes the amount of rebuilding necessary by
+placing the items that are most likely to change towards the end of
+the build process.
+
+\paragraph{2. Container Registry Upload}
+
+Most Managed Kubernetes services come with the option to create a
+private container registry.  With proper authentication, this allows
+Docker and Kubernetes to access user-created images as easily as if
+they were in a public registry.  Images built with Docker are uploaded
+to a private container registry for use in the collaborative debugger.
+
+\paragraph{3. Pod Configuration Schema}
+
+The Pod configuration schema for most Pods in the collaborative
+debugger is fairly generic.  It consists of a \lstinline{name}, an
+\lstinline{image} sourced from the container registry, and in the case
+of pods that need to interact with a load balancer, an
+\lstinline{app}.
+
+\begin{lstlisting}[language=YAML,basicstyle=\linespread{0.5}\ttfamily,caption={RR Debug Pod Schema},captionpos=b]
+apiVersion: v1
+kind: Pod
+metadata:
+  name: rr-translation
+  labels:
+    purpose: translate-rr
+spec:
+  containers:
+  - name: rr-test-container
+    image: # Redacted
+    securityContext:
+      capabilities:
+        add:
+        - SYS_PTRACE
+  restartPolicy: OnFailure
+\end{lstlisting}
+
+A notable exception is the RR Debug Pod Schema, which adds the
+\lstinline{SYS_PTRACE} capability to the Pod.  This is necessary for
+rr to properly trace system calls.
+
+\paragraph{4 \& 5. Pod Creation}
+
+For statically created Pods, the \lstinline{kubectl apply} command is
+used to create new Pods.  Kubernetes pulls the container image defined
+in the schema from the container registry and starts the Pod with any
+necessary commands.  The database Pod is connected to a long-term
+storage volume at this time.  Upon successful creation, the Pod is
+ready to interact with any necessary load balancers.
+
+\subsection{Frontend/API Server}\label{api}
+
+We just need this in here for the ref for now. TODO.
 
 \section{Next Steps}
 
-TODO: write about additional/necessary unimplemented features (ATM
-this is looking like auth stuff, unless OAuth2 proves to be less of a
-pain in the ass then when I've used it before in Javascript.  Maybe
-some of the vis stuff as well, though I'd really like to get the
-basics done here.)  Write about desire to actually do research and see
-whether the tool helps students learn debugging.
+TODO
 
 \pagebreak
 \bibliographystyle{acm}
