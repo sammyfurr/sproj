@@ -70,6 +70,11 @@ rri = RRInterface()
 channel = None
 current_source = ''
 
+def read_source(path):
+    with open(path, 'r') as f:
+        text = f.read()
+        return text
+
 @sio.event
 def connect():
     print("Connected.")
@@ -95,12 +100,11 @@ def on_rr_command(data):
             # If it's different, read the contents of the file, and
             # send that along with the file name and line number
             try:
-                with open(s['path'], 'r') as f:
-                    text = f.read()
-                    # current_source = s['path']
-                    response['source'] = {'file_name': s['file'],
-                                          'current_line': s['line'],
-                                          'contents': text}
+                text = read_source(s['path'])
+                current_source = s['path']
+                response['source'] = {'file_name': s['file'],
+                                      'current_line': s['line'],
+                                      'contents': text}
             except:
                 response['source'] = {'file_name': None,
                                       'current_line': '0',

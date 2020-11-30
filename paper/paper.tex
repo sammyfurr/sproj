@@ -4,7 +4,7 @@
 
 \usepackage{graphicx}
 \usepackage[doublespacing]{setspace}
-\usepackage{hyperref}
+\usepackage[hidelinks]{hyperref}
 \usepackage{titlesec}
 \newcommand{\sectionbreak}{\clearpage}
 
@@ -91,6 +91,14 @@
 \pagebreak
 
 \section{Introduction}
+
+The goal of this project is to create a collaborative debugger to aid
+in the teaching of debugging.  The collaborative debugger aims to help
+teachers integrate this undertaught skill into their classes.  It
+realizes the benefits of collaborative programming and teaching
+debugging by providing a platform that is genuinely useful to students
+and teachers.
+
 \subsection{Motivation}
 
 Debugging is invaluable in writing and understanding code, yet it is
@@ -106,6 +114,10 @@ using a debugger requires a set of high-level, platform agnostic,
 teachable skills.  Teaching these skills is effective, and translates
 into better, faster, debugging and
 programming\cite{10.1145/3286960.3286970}\cite{10.1145/3361721.3361724}.
+Teaching these debugging skills collaboratively will likely offer the
+same confidence and correctness benefits realized by teaching
+programming collaboratively
+\cite{10.1145/1026487.1008043}\cite{10.1145/1145287.1145293}.
 
 \subsubsection{The Value of Teaching Debugging}
 
@@ -116,18 +128,19 @@ thinking'' curriculums\cite{10.1145/3361721.3361724}.  These
 curriculums attempt to teach skills in computer science classes that
 translate into other subject areas: the UK's computer science
 curriculum considers debugging an essential ``transferable
-skill''\cite{10.1145/2602484}.\par There seems to be confidence that
-the problem-solving techniques used in debugging are widely
-applicable, but of greater interest to computer science teachers is
-whether teaching debugging directly benefits student programmers.
-Michaeli and Romeike conducted a good, albeit somewhat small, study on
-the efficacy of teaching a systematic debugging process to K12
-students.  They found that students who have been taught a specific
-debugging framework performed better in debugging tests and were more
-confident in their own debugging skills\cite{10.1145/3361721.3361724}.
-Their result is positive evidence towards the efficacy of teaching
-debugging, though it doesn't include college or university
-students.\par
+skill''\cite{10.1145/2602484}.\par
+
+There seems to be confidence that the problem-solving techniques used
+in debugging are widely applicable, but of greater interest to
+computer science teachers is whether teaching debugging directly
+benefits student programmers.  Michaeli and Romeike conducted a good,
+albeit somewhat small, study on the efficacy of teaching a systematic
+debugging process to K12 students.  They found that students who have
+been taught a specific debugging framework performed better in
+debugging tests and were more confident in their own debugging
+skills\cite{10.1145/3361721.3361724}.  Their result is positive
+evidence towards the efficacy of teaching debugging, though it doesn't
+include college or university students.\par
 
 As Michaeli and Romeike point out, there is a lack of research into
 the value of teaching debugging in higher education.  None of the
@@ -167,33 +180,49 @@ they split debugging knowledge into 5 categories: \textit{Domain},
 teaching aids---from those that involve writing code to games---and
 map tools to the knowledge areas they seek to address.  After an
 evaluation of a host of different tools, they claim to find a few
-significant faults in current debugging teaching platforms. The
-primary two which this project seeks to address are as follows:
-
-\begin{enumerate}
-\item A lack of back-tracing ability/coverage.
-\item A lack of tools addressing system knowledge (an understanding of
-  the program to be debugged).
-\end{enumerate}
+significant faults in current debugging teaching platforms.  The
+collaborative debugger primarily seeks to address the lack of
+back-tracing ability/coverage found in their research.
 
 \subsubsection{The Value of Collaborative Programming}
 
-TODO: find some basic research that backs up the claim that
-collaborative/pair programming is worthwhile.
+Research into the value of collaborative programming is overwhelmingly
+positive.  McDowell et. al. found that not only does collaborative
+programming significantly boost student confidence and the retention
+of students in computer science majors, but that it demonstrably
+improves student's work \cite{10.1145/1145287.1145293}.  These
+benefits of confidence and correctness are present when paired and
+non-paired students are given identical assignments
+\cite{10.1145/1026487.1008043}, further indicating that the simple act
+of collaboration definitively benefits computer science students.\par
 
-\subsubsection{Tools that Enable Collaborative Programming}
+It seems that the benefits in confidence that result from teaching
+debugging should be magnified by teaching debugging collaboratively.
+There are similarities between the introductory nature of teaching
+fundemental debugging skills and the nature of teaching fundemental
+programming skills covered in the classes studied in
+\cite{10.1145/1026487.1008043} and \cite{10.1145/1145287.1145293}.
+Introductory programming classes typically use a specific programming
+language in order to introduce widely applicable programming
+principles.  By using a specific collaborative platform to introduce
+debugging principles, students may realize the same benefits in both
+confidence \textit{and} correctness that they do from pair programming
+in introductory comptuer science classes.\par
+
+The collaborative debugger aims to provide such a platform.
+
+\subsection{Existing Tools that Enable Collaborative Programming} \label{exisitingcollab}
 
 TODO: write about glitch, repl.it, etc.
 
-\subsubsection{Collaborative Programming and Teaching Debugging}
 
 Debuggers exist at an intersection of tools and skills similar to
 programming languages themselves. By becoming familiar with a specific
 debugger, students learn techniques and paradigms necessary to use all
 debuggers effectively.
-\pagebreak
 
-\subsection{Tools Used}
+
+\section{Tools Used}
 
 \begin{figure}[h!]
 
@@ -222,7 +251,7 @@ the collaborative debugger.  The debugger consists of:
   \end{enumerate}
 \end{enumerate}
 
-\subsubsection{Kubernetes}\label{k8s}
+\subsection{Kubernetes}\label{k8s}
 
 Kubernetes is the defacto standard in container orchestration
 software.  It provides a layer of abstraction on top of normal
@@ -231,10 +260,12 @@ closely linked containers into a ``Pod'', Kubernetes is able to manage
 deployment and re-deployment of applications running inside
 containers.  It is trivial to create new Pods, or to create multiple
 Pods running the same application as needed within a Kubernetes
-cluster \cite{k8s}.  The speed at which even relatively large Pods can be created
-and the inherent security provided by containerization drove the
-decision to create a new Pod on the fly for each debugging instance in
-the collaborative debugger.
+cluster \cite{k8s}.  The speed at which even relatively large Pods can
+be created and the inherent security provided by containerization
+drove the decision to create a new Pod on the fly for each debugging
+instance in the collaborative debugger.  This allows the debugger to
+provide a similar level of convinience to exisiting collaborative
+tools, such repl.it (\ref{exisitingcollab}).
 \par
 
 Kubernetes also provides services to facilitate load balancing, manage
@@ -243,9 +274,9 @@ these features, in tandem with the ease of Kubernetes deployment on a
 managed Kubernetes service\cite{do_managed_k8s} greatly accelerated
 development.
 
-\subsubsection{Mozilla's rr}\label{rr}
+\subsection{Mozilla's rr}\label{rr}
 
-\paragraph{Overview}
+\subsubsection{Overview}
 
 rr is ``a lightweight tool for recording, replaying and debugging
 execution of applications''\cite{rr-repo}. rr allows a programmer to
@@ -272,9 +303,12 @@ exactly replicated.  With the collaborative debugger, teachers can
 record a program's execution and design a debugging lesson which
 students can work on together.  The repeatability of rr means that
 students can focus on debugging, and teachers can create as specific
-examples as they please.
+examples as they please.  The use of rr is the most significant step
+the collaborative debugger takes to addressing the lack of
+back-tracing ability/coverage found in existing tools for teaching
+debugging\cite{10.1145/3286960.3286970}.
 
-\paragraph{Limitations}
+\subsubsection{Limitations}
 
 In comparison to solutions like PANDA\cite{10.1145/2843859.2843867}
 that rely on capturing the entire state of of a virtual machine to
@@ -293,7 +327,7 @@ non-local execution.  In conjunction with Kubernetes, it takes a few
 seconds to create a new container running rr and connect to web
 clients.
 
-\subsubsection{pygdbmi}
+\subsection{pygdbmi}
 
 In order to ``support the development of systems which use the
 debugger as just one small component of a larger system'', GDB
@@ -308,10 +342,10 @@ To parse rr output into Python dictionaries and to easily control rr
 as a subprocess, pygdbmi \cite{pygdbmi} is used in each debugging Pod.
 pygdbmi's abstraction simplifies programatically controlling rr.  A
 Pod can receive a command from the client, pass it to rr, and respond
-without having to deal with parsing GDB/MI output or managing the rr
-process.
+without having to deal with parsing GDB/MI output or with directly
+managing the rr process.
 
-\subsubsection{Socket.IO}\label{socketio}
+\subsection{Socket.IO}\label{socketio}
 
 To speed communication, the collaborative debugger uses WebSockets to
 directly connect web clients and the Pods running rr.  Socket.IO is a
@@ -324,7 +358,7 @@ Messages are passed through a server to individual debugging Pods,
 both of which use the Python implementation of Socket.IO,
 python-socket.io \cite{python_socketio}.
 
-\subsubsection{MongoDB}\label{mongodb}
+\subsection{MongoDB}\label{mongodb}
 
 The collaborative debugger uses a database to store information about
 users, Pods, and example debugging sessions.  Due to it's speed of
@@ -332,12 +366,12 @@ deployment and natural interaction with the object-oriented languages
 used to create the project, MongoDB was chosen as database software
 \cite{mongodb}.
 
-\subsubsection{Flask and Node.js}\label{flask/node}
+\subsection{Flask and Node.js}\label{flask/node}
 
 The primary server for the collaborative debugger is split into two
 sections: a simple Node.js \cite{node} server that serves the frontend
 webapp, and an API server created using Flask \cite{flask}.  While in
-development, the builtin React (see next section) development server
+development, the builtin React (\ref{react}) development server
 is used to serve the frontend.  This makes debugging the frontend far
 easier.
 \par
@@ -349,7 +383,7 @@ server.  Flask is a lightweight web application framework which lends
 itself perfectly to interacting with the Python MongoDB and Kubernetes
 APIs.
 
-\subsubsection{React}\label{react}
+\subsection{React}\label{react}
 
 React is JavaScript library that simplifies creating user interfaces
 and managing state \cite{react}.  React's state management is of
@@ -366,7 +400,7 @@ inclusion of segments of HTML code within a React app written in
 JavaScript.  This makes it easy for each component of the one-page
 webapp to hide/show subcomponents as state changes.
 
-\subsubsection{Monaco and Xterm.js}\label{xtermjs/monaco}
+\subsection{Monaco and Xterm.js}\label{xtermjs/monaco}
 
 After joining or creating a debugging session, users spend most of
 their time interacting collaboratively with rr.  Their primary
@@ -419,11 +453,12 @@ collaborative debugger:
   multiple Pods running the same application may be created to
   facilitate increased load.
 \item Dynamically created Pods.  This class of Pod contains the
-  individual instances of \textit{RR Debug Pods} that are created on
-  request by the API server.  When a client requests a new debug
-  session, the API server uses the Kubernetes API to create a new Pod
-  based on an existing template, gives the Pod a unique identifier,
-  and associates it in the database with the requesting client.
+  individual instances of \textit{RR Debug Session Pods} that are
+  created on request by the API server.  When a client requests a new
+  debug session, the API server uses the Kubernetes API to create a
+  new Pod based on an existing template, gives the Pod a unique
+  identifier, and associates it in the database with the requesting
+  client.
 \end{enumerate}
 
 These Pods communicate with other Pods in the cluster and with the
@@ -436,12 +471,12 @@ collaborative debugger, these Services manifest as:
 \item The \textit{Database ClusterIP}: a ClusterIP, which exposes the
   Database Pod only inside the cluster.  The only component that makes
   use of this ClusterIP is the API server, which uses it primarily to
-  communicate information about users and RR Debug Pods with the
+  communicate information about users and RR Debug Sessions with the
   database.
 \item The \textit{RR Message Load Balancer}: a Load Balancer, which
   exposes the RR Message Server Pods to the outside world.  Using
   Socket.IO, clients send commands to and recieve responses from
-  individual RR Debug Pods through the RR Message Server Pods.
+  individual RR Debug Session Pods through the RR Message Server Pods.
 \item The \textit{Frontend Load Balancer}: another Load Balancer,
   which exposes the Frontend/API Server Pods to the outside world.
   Clients request the frontend webapp and send api requests/recieve
@@ -455,8 +490,8 @@ session is assigned at 5 digit identifier at creation, which is used
 to join sessions in progress.
 \par
 
-Each component of the backend and
-frontend will be discussed in depth in the following sections.
+Each component of the backend and frontend will be discussed in depth
+in the following sections.
 
 \subsection{Configuration and Setup}
 
@@ -464,28 +499,27 @@ Configuration and setup of the collaborative debugger is relatively
 simple.  After a Kubernetes cluster is created (this is made easier by
 using a Managed Kubernetes service) Pods and Services are created
 using various configuration files.  Services should be created first,
-so that Pods can be created which rely on access to Services in order
-to run.  The following sections outline the process of creating a
+so that Pods which rely on access to Services function properly on
+creation.  The following sections outline the process of creating a
 cluster, Pods, and Services, with a focus on statically created Pods.
 The process of building images for building dynamically created Pods
-is identical, but the process of starting the Pods is more
-complicated.  This process will be discussed in-depth in the section
-on the API server \ref{api}.
+is similar, but the process of starting the Pods is more complicated.
+This process will be discussed in-depth in the section on the API
+server (\ref{api}).
 
 \subsubsection{Cluster Selection and Configuration}
 
-Though Docker and by extension Kubernetes aim to be largely
-platform-agnostic, the requirements of rr impose some restrictions on
-cluster setup and configuration.  Clusters, even those running inside
-a VM, must be run on machines using relatively modern Intel x86 CPUs
-(Nehalem and beyond).  The clusters must run on an operating system
-using Linux kernel version 3.11 or higher \cite{rr-repo}.  The reasons
-for these restrictions are discussed in the section on rr (\ref{rr}).
-Finally, in order for rr to be able to work efficiently, the
+Though Kubernetes aims to be largely platform-agnostic, the
+requirements of rr impose some restrictions on cluster setup and
+configuration.  Clusters, even those running inside a VM, must be run
+on machines using relatively modern Intel x86 CPUs (Nehalem and
+beyond).  The clusters must run on an operating system using Linux
+kernel version 3.11 or higher \cite{rr-repo}.  Finally, in order for
+rr to be able to work efficiently, the
 \lstinline{kernel.perf_event_paranoid} parameter must be set to 1
 \cite{rr-repo}.  This should be done on every node in the cluster
-which will run RR Debug Pods.  For the purposes of development, it has
-been set to 1 on all nodes in the collaborative debugger cluster.
+which will run RR Debug Sessions.  For the purposes of development, it
+has been set to 1 on all nodes in the collaborative debugger cluster.
 
 \subsubsection{Creating Pods}
 
@@ -522,7 +556,7 @@ Pods are created in five steps:
 
 Docker containers are created using a Dockerfile.  The Dockerfile used
 to create the container image for the RR Message
-Server is shown below.\\
+Server is shown below:\\
 
 \begin{lstlisting}[language=Dockerfile,caption={RR Message Server Dockerfile},captionpos=b]
 # Base Image
@@ -556,17 +590,19 @@ the same structure as the one outlined in the Dockerfile above:
 
 \begin{enumerate}
 \item The base image is defined. The RR Message Server and RR Debug
-Pod images are based on the latest Ubuntu image.  This is particuarly
-necessary for the RR Debug Pod image, as rr's low-level nature
-facilitates frequent updates as changes are made to the Linux kernel.
-The Frontend/API Server image is based on the latest Node image, and
-the Database image is based on the latest MongoDB image.
+  Session images are based on the latest Ubuntu image.  This is
+  particuarly necessary for the RR Debug Session image, as rr's
+  low-level nature necessitates somewhat frequent updates as changes
+  are made to the Linux kernel.  The Frontend/API Server image is
+  based on the latest Node image, and the Database image is based on
+  the latest MongoDB image.
 \item Second, any necessary packages are installed.  For the RR Debug
   Pod image, rr is compiled from source and installed.
 \item A non-root user is created if necessary.
 \item Program files are copied over and a file structure is created.
   Packages that don't rely on the base images builtin package manager
-  are installed here.
+  are installed at this time.  In the example above, these include
+  Python packages.
 \item A startup command is defined.
 \end{enumerate}
 
@@ -589,9 +625,9 @@ The Pod configuration schema for most Pods in the collaborative
 debugger is fairly generic.  It consists of a \lstinline{name}, an
 \lstinline{image} sourced from the container registry, and in the case
 of pods that need to interact with a load balancer, an
-\lstinline{app}.
+\lstinline{app}.\\
 
-\begin{lstlisting}[language=YAML,basicstyle=\linespread{0.5}\ttfamily,caption={RR Debug Pod Schema},captionpos=b]
+\begin{lstlisting}[language=YAML,basicstyle=\linespread{0.5}\ttfamily,caption={RR Debug Session Schema},captionpos=b]
 apiVersion: v1
 kind: Pod
 metadata:
@@ -601,7 +637,7 @@ metadata:
 spec:
   containers:
   - name: rr-test-container
-    image: # Redacted
+    image: example-container-registry.com/sproj/...
     securityContext:
       capabilities:
         add:
@@ -609,7 +645,7 @@ spec:
   restartPolicy: OnFailure
 \end{lstlisting}
 
-A notable exception is the RR Debug Pod Schema, which adds the
+A notable exception is the RR Debug Session Schema, which adds the
 \lstinline{SYS_PTRACE} capability to the Pod.  This is necessary for
 rr to properly trace system calls.
 
@@ -622,9 +658,335 @@ necessary commands.  The database Pod is connected to a long-term
 storage volume at this time.  Upon successful creation, the Pod is
 ready to interact with any necessary load balancers.
 
+\subsubsection{Service Creation}
+
+Services are the first components of the collaborative debugger
+created after the cluster is initiallized.  The three Services used by
+the debugger are all statically created.  Like statically created
+Pods, schemas that define Services are applied manually using the
+\lstinline{kubectl apply} command.\\
+
+\begin{lstlisting}[language=YAML,basicstyle=\linespread{0.5}\ttfamily,caption={Frontend Load Balancer Schema},captionpos=b]
+apiVersion: v1
+kind: Service
+metadata:
+  name: frontend-load-balancer
+spec:
+  selector:
+    app: frontend
+  type: LoadBalancer
+  ports:
+    - port: 3000
+    targetPort: 3000
+\end{lstlisting}
+
+The \lstinline{app} field in the above schema corresponds to the
+\lstinline{app} field defined in the metadata of the Frontend/API
+Server configuration schema.  Traffic to the Load Balancer's external
+IP address on port 3000 is redirected automatically by Kubernetes to
+any Pod running the Frontend/API Server.  The Load Balancer determines
+which Pod is the most suitable given current demands on the system.
+
+\subsection{RR Debug Sessions \& RR Message Server}
+
+At the heart of the collaborative debugger is the RR Debug Session.
+Every time a user wants to debug a new program execution, an RR Debug
+Session Pod is dynamically created by the API server.  The new Pod is
+assigned a unique five digit identification number when it is created.
+This five digit number, is used as the channel for the RR Debug
+Session, seperating its communication from other RR Debug Session
+Pods.  Clients, RR Message Server Pods, and the RR Debug Session Pod
+connect through the RR Message Load Balancer.  Clients and RR Debug
+Sessions send messages using the channel assigned to the pod at
+creation time.  A diagram of one full communication cycle between two
+clients and an RR Debug Session Pod is outlined in the diagram below:
+
+\begin{figure}[h!]
+
+  \includegraphics[scale=1]{rr_detailed}
+  \centering
+  \caption{RR Message Server Communication Cycle}
+  \label{rr:detailed}
+\end{figure}
+
+The process of sending a command to an RR Debug Session and receiving
+a response is as follows:
+
+\begin{enumerate}
+\item Client A, already having connected to the channel that
+  corresponds to it's current RR Debug Session (channel 12345 in the
+  example), sends an rr command.
+\item The RR Message Server recieves the command and emits a message
+  that RR Debug Session Pods are equiped to recieve on the same
+  channel.  In practice, since only one RR Debug Session Pod is ever
+  on a channel, this equates to emmiting a message to the Pod
+  directly.
+\item The RR Debug Session Pod recieves the message, and passes the
+  command to its instance of RRInterface.  When it recieves a
+  response, it emits the output from rr along with other debugging
+  information and the channel.
+\item The RR Message Server recieves the response, and emits a
+  response message that clients are equipped to recieve on the
+  corresponding channel.
+\item Clients A and B are connected to the corresponding channel, so
+  they both recieve the response.
+\end{enumerate}
+
+\subsubsection{RR Message Server}
+
+The RR Message server is remarkably simple, consisting of just 3
+important functions:\\
+
+\begin{lstlisting}[language=Python,basicstyle=\linespread{0.5}\ttfamily,caption={RR Message Server},captionpos=b]
+@sio.on('join_channel')
+def join_channel(sid, data):
+    sio.enter_room(sid, data['channel'])
+
+@sio.on('rr_command')
+def on_rr_command(sid, data):
+    data['sid'] = sid
+    try:
+        sio.emit('rr_command', data,
+                 room=data['channel'])
+    except:
+        pass
+
+@sio.on('rr_response')
+def on_rr_response(sid, data):
+    sio.emit('rr_response', data,
+             room=data['channel'])
+\end{lstlisting}
+
+Even in a fully production ready version of the collaborative debugger
+with more security features enabled, the RR Message Server is unlikely
+to become much more complex.  It exists purely to pass messages
+between clients and RR Debug Session Pods and to manage channels.
+Since the design of other aspects of the collaborative debugger ensure
+that all members of a given channel exist only during the lifetime of
+it's corresponding RR Debug Session Pod, the
+\lstinline{'join_channel'} event handler simply adds socket.io clients
+to a specified channel on request.
+\par
+
+The two message processing functions, \lstinline{on_rr_command} and
+\lstinline{on_rr_response}, are equally simple.  When the RR Message
+Server recieves an \lstinline{'rr_command'} message, it passes the
+message data along to the corresponding RR Debug Session Pod by
+emitting an \lstinline{'rr_command'} namespaced to the correct channel
+with \lstinline{room=data['channel']}.  Since the socket.io client
+running in RR Message Server Pods has an event handler defined for
+\lstinline{'rr_command'}s but frontend clients do not, only RR Message
+Server Pods recieve the command.  The same process happens in reverse
+for \lstinline{'rr_response'}s, with only the frontend socket.io
+clients having a handler defined for \lstinline{'rr_response'}.
+
+
+\subsubsection{RR Debug Session}
+
+\paragraph{Building Example Pods}
+
+The process for building RR Debug Session example images is differs
+slightly from other images used by the collaborative debugger.
+Currently, three example RR Debug Session images are availiable for
+use.  Example container images are based on the primary RR Debug
+Session image, RR Translation.  The build process for this image,
+based on the lasted official Ubuntu container image, installs rr,
+python, and all necessary packages as well as the app that will run on
+the final image, \lstinline{rrtranslation.py}.\\
+
+\begin{lstlisting}[language=Dockerfile,caption={RR Debug Session Hash Example---Dockerfile},captionpos=b]
+FROM example-container-registry.com/sproj/...
+  
+WORKDIR /home/debug/app/
+COPY hash.c .
+COPY names .
+COPY startup.sh .
+\end{lstlisting}
+
+The Dockerfile shown above is for a simple hash program RR Debug
+Session example.  The build process copies over any necessary files,
+as well as a startup script:\\
+
+\begin{lstlisting}[basicstyle=\linespread{0.5}\ttfamily,caption={Example Startup Script},captionpos=b]
+gcc -g -o hash hash.c
+rr record ./hash
+python3 rrtranslation.py $1
+\end{lstlisting}
+
+This script is used to start the \lstinline{'rrtranslation.py'} program
+when the Pod is dynamically created.  The script will be passed the
+Pod's channel as argument \lstinline{$1} by the Kubernetes API on
+startup.
+\par
+
+Current example pod startup scripts compile the program to be debugged
+and record execution when the pod is created.  It is easy to create a
+more specific example to be replayed, if exact reproduction of
+syscalls or other non-deterministic behavior is desired.  The
+example's creator can record an rr session locally ahead of building
+the example Pod and copy the recording into the appropriate folder
+during the build process.  Since rr recordings are portable, the
+example will replay without issue in the RR Debug Session Pod.
+
+\paragraph{The RR Translation Program}
+
+The RR Translation program consists of two main components: a socket.io
+client, \lstinline{sio}, and an instance of the
+\lstinline{RRInterface} class, \lstinline{rri}, that controls the rr
+subprocess and parses interactions.  Simple code to read information
+about the current source file currently exists within
+\lstinline{sio}'s \lstinline{'rr_command'} event handler, but should
+be broken out into its own class if more complexity is added.
+\par
+
+The RR Translation program's socket.io client instance begins by
+connecting to the RR Message Server.  It immediately emits a
+\lstinline{'join_channel'} message, using the channel passed in from
+the Kubernetes API call on it's creation. \\
+
+\begin{lstlisting}[language=Python,basicstyle=\linespread{0.5}\ttfamily,caption={RR Translation Main},captionpos=b]
+if __name__ == '__main__':
+    channel = sys.argv[1]
+    sio.connect('http://rr-message-server-load-balancer:8000')
+    sio.emit('join_channel', {'channel': channel})
+\end{lstlisting}
+
+After joining the appropriate channel, \lstinline{sio} waits to
+recieve an \lstinline{'rr_command'}.  The first part of
+\lstinline{sio}'s \lstinline{'rr_command'} event handler is shown below:\\
+
+\begin{lstlisting}[language=Python,basicstyle=\linespread{0.5}\ttfamily,caption={RR Command Event Handler},captionpos=b]
+@sio.on('rr_command')
+def on_rr_command(data):
+
+    body = {'from': data['sid'],
+            'command': data['command'],
+            'channel': channel}
+    
+    try:
+        response = {'output': rri.write(data['command'])}
+\end{lstlisting}
+
+The handler first builds part of the response body, passing back data
+about the channel and originator of the message that will be important
+for the RR Message Server and client later.  Next, it calls the
+function necessary to pass a message to rr and recieve a response,
+\lstinline{rri.write()}.
+\par
+
+When the program starts, an instance of the \lstinline{RRInterface}
+class, \lstinline{rri}, is initialized in the same scope as
+\lstinline{sio}.  \lstinline{RRInterface} contains an instance of the
+\lstinline{GDBController} class from pygdbmi to interface with rr and
+control the rr subprocess, as well as a collection of methods to parse
+rr output, the three most important of which are shown below: \\
+
+\begin{lstlisting}[language=Python,basicstyle=\linespread{0.5}\ttfamily,caption={RRInterface},captionpos=b]
+def get_full_rr_response(self, command):
+    response = self.gdbmi.write(command)
+    while(not(self.end(response) or self.exited(response))):
+        response.extend(self.get_rr_response())
+    return response
+
+def write(self, command):
+    if self.command_forbidden(command):
+        raise DissallowedError
+    self.timeline.append(command)
+    return self.console_output(
+        self.get_full_rr_response(command))
+
+def source(self):
+    f = self.get_full_rr_response(
+        '-file-list-exec-source-file')[0]['payload']
+    return {'file': f['file'],
+            'line': f['line'],
+            'path': f['fullname']}
+\end{lstlisting}
+
+When \lstinline{write} is called, it determines if the command to be
+executed is forbidden.  Currently only one gdb command,
+\lstinline{shell}, is disallowed.  Parsing the output from
+\lstinline{shell} is difficult, it is of virtually no use since
+\textit{recordings}, not currently executing programs that
+\lstinline{shell} could effect are being debugged, and it opens the
+door to security issues.  Though containerization means that the most
+users could probably do is render their own debug session useless, the
+downsides of \lstinline{shell} far outweigh the benefits.
+\par
+
+Next, write appends the command to the \lstinline{RRInterface}'s
+\lstinline{timline} instance variable.  \lstinline{timeline} is a list
+of all commands the debug session has executed.  Though unused at the
+moment, it can serve in the future to impliment a shared history
+between all clients and to facilitate the saving of debug sessions
+in-progress.  By issuing all commands in \lstinline{timeline} to a new
+instance of \lstinline{RRInterface} with the same recording, it is
+possible to restore a debug session to an identical previous state.
+To save a debug session, the recording and \lstinline{timeline} can be
+stored in a database, and be used to initialize a new Pod with
+identical state to a previous RR Debug Session Pod.  This appears to
+clients as a seemless restoration of a previous Debug Session.
+\par
+
+Since the frontend currently consists of a terminal interface to rr
+and a view of the current source code, write does not need to return
+any information from rr other than console output.  Future versions of
+the collaborative debugger that support visualization tools could use
+gdbmi commands such as \lstinline{-stack-list-frames} to retrieve
+information to be used by frontend visualization tools.
+\lstinline{console_output} extracts user-relevant output from the
+dictionary returned by \lstinline{GDBController}'s \lstinline{write}
+method.  The \lstinline{get_full_rr_response} method ensures that all
+relavant output has been recieved from the rr subprocess before
+returning.  Write reduces the lengthy dictionary that would be
+produced by a command as simple as \lstinline{break main} into a few
+lines of user-relevant output.
+\par
+
+After the \lstinline{'rr_command'} event handler has recieved a
+response from \lstinline{rri}, it calls \lstinline{RRInterface}'s
+\lstinline{source} function to retrieve information about the current
+source file being debugged.  Most often the source file has not
+changed, and the only relevant piece of information that needs to be
+passed back to the client is the new line number in the source file.
+If the source file has changed, the handler reads its contents,
+updates \lstinline{current_file}, and emits the line number, file
+name, and contents.  If an error occurs at any point in the process, a
+detailed trace is emmitted for debugging purposes.  The trace should
+be ommited in production.
+\par
+
+Most of the complexity in the RR Translation program stems from
+parsing rr output.  The flow of data in the program is quite simple: a
+command is recieved, it is passed to rr, rr's response is processed,
+and a response message is emmited.  This flow would remain unchanged
+even with the addition of functions to retrieve information for data
+visualization.  Since the process of turning rr responses into a
+terminal interface takes place in the frontend, rather than the RR
+Translation program providing some sort of REPL over WebSockets,
+updates can be made to the frontend webapp without requiring backend
+changes.  The whole process is also quite snappy, with only a slight
+delay from the client's perspective compared to running a debugger
+natively.
+\par
+
+Effort is taken in the design of the RR Debug Session and RR Message
+Server to ensure students recieve a pleasant and near-identical
+experience to debugging locally in the future.  The aim is to provide
+students with an experience they can directly reference when using rr
+or gdb in the future, as well as one which is seamless to encourage
+the acquisition of debugging skills.  The system of inheritance used
+to create example debug session pods is designed to be as simple as
+possible, though a more fully featured frontend could simplify this
+process further in the future.
+
 \subsection{Frontend/API Server}\label{api}
 
 We just need this in here for the ref for now. TODO.
+
+\subsection{Webapp}\label{webapp}
+
+TODO
 
 \section{Next Steps}
 
