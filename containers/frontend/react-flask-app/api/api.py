@@ -54,10 +54,7 @@ def new():
     try:
         name = request.get_json()['name']
         program = request.get_json()['program']
-        examples = tpm.get_examples()
-        container = examples[program]
-        print(container)
-        channel = tpm.create_pod([name], container)
+        channel = tpm.create_pod([name], program)
         return {'channel': channel}
     except:
         return {'error': 'Internal Error'}

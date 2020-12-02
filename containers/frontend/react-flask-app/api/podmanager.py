@@ -10,6 +10,10 @@ class NoMatchingChannelError(Exception):
     """Raised when no pod matches a provided channel"""
     pass
 
+class NoSuchExampleError(Exception):
+    """Raised when no example image is found for a given image name"""
+    pass
+
 class TranslationPodManager:
     def __init__(self, url='localhost', port=27017):
         self.dbc = database.DatabaseController(url, port)
@@ -17,7 +21,13 @@ class TranslationPodManager:
         config.load_incluster_config()
         self.v1 = client.CoreV1Api()
         
-    def create_pod(self, names, image):
+    def create_pod(self, names, program):
+        examples = self.get_examples()
+        image = None
+        try:
+            image = examples[program]
+        except:
+            raise NoSuchExampleError
         dep = {'apiVersion': 'v1',
                'kind': 'Pod',
                'metadata': {'labels': {'purpose': 'translate-rr'}},

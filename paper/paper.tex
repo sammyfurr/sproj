@@ -619,7 +619,7 @@ Docker and Kubernetes to access user-created images as easily as if
 they were in a public registry.  Images built with Docker are uploaded
 to a private container registry for use in the collaborative debugger.
 
-\paragraph{3. Pod Configuration Schema}
+\paragraph{3. Pod Configuration Schema} \label{podschema}
 
 The Pod configuration schema for most Pods in the collaborative
 debugger is fairly generic.  It consists of a \lstinline{name}, an
@@ -627,7 +627,7 @@ debugger is fairly generic.  It consists of a \lstinline{name}, an
 of pods that need to interact with a load balancer, an
 \lstinline{app}.\\
 
-\begin{lstlisting}[language=YAML,basicstyle=\linespread{0.5}\ttfamily,caption={RR Debug Session Schema},captionpos=b]
+\begin{lstlisting}[language=YAML,basicstyle=\linespread{0.5}\ttfamily\small,caption={RR Debug Session Schema},captionpos=b]
 apiVersion: v1
 kind: Pod
 metadata:
@@ -666,7 +666,7 @@ the debugger are all statically created.  Like statically created
 Pods, schemas that define Services are applied manually using the
 \lstinline{kubectl apply} command.\\
 
-\begin{lstlisting}[language=YAML,basicstyle=\linespread{0.5}\ttfamily,caption={Frontend Load Balancer Schema},captionpos=b]
+\begin{lstlisting}[language=YAML,basicstyle=\linespread{0.5}\ttfamily\small,caption={Frontend Load Balancer Schema},captionpos=b]
 apiVersion: v1
 kind: Service
 metadata:
@@ -737,7 +737,7 @@ a response is as follows:
 The RR Message server is remarkably simple, consisting of just 3
 important functions:\\
 
-\begin{lstlisting}[language=Python,basicstyle=\linespread{0.5}\ttfamily,caption={RR Message Server},captionpos=b]
+\begin{lstlisting}[language=Python,basicstyle=\linespread{0.5}\ttfamily\small,caption={RR Message Server},captionpos=b]
 @sio.on('join_channel')
 def join_channel(sid, data):
     sio.enter_room(sid, data['channel'])
@@ -783,7 +783,7 @@ clients having a handler defined for \lstinline{'rr_response'}.
 
 \subsubsection{RR Debug Session}
 
-\paragraph{Building Example Pods}
+\paragraph{Building Example Pods} \label{buildingchannel}
 
 The process for building RR Debug Session example images is differs
 slightly from other images used by the collaborative debugger.
@@ -794,7 +794,7 @@ based on the lasted official Ubuntu container image, installs rr,
 python, and all necessary packages as well as the app that will run on
 the final image, \lstinline{rrtranslation.py}.\\
 
-\begin{lstlisting}[language=Dockerfile,caption={RR Debug Session Hash Example---Dockerfile},captionpos=b]
+\begin{lstlisting}[language=Dockerfile,basicstyle=\small,caption={RR Debug Session Hash Example---Dockerfile},captionpos=b]
 FROM example-container-registry.com/sproj/...
   
 WORKDIR /home/debug/app/
@@ -807,7 +807,7 @@ The Dockerfile shown above is for a simple hash program RR Debug
 Session example.  The build process copies over any necessary files,
 as well as a startup script:\\
 
-\begin{lstlisting}[basicstyle=\linespread{0.5}\ttfamily,caption={Example Startup Script},captionpos=b]
+\begin{lstlisting}[basicstyle=\linespread{0.5}\ttfamily\small,caption={Example Startup Script},captionpos=b]
 gcc -g -o hash hash.c
 rr record ./hash
 python3 rrtranslation.py $1
@@ -828,7 +828,7 @@ the example Pod and copy the recording into the appropriate folder
 during the build process.  Since rr recordings are portable, the
 example will replay without issue in the RR Debug Session Pod.
 
-\paragraph{The RR Translation Program}
+\paragraph{The RR Translation Program} \label{joiningchannel}
 
 The RR Translation program consists of two main components: a socket.io
 client, \lstinline{sio}, and an instance of the
@@ -844,7 +844,7 @@ connecting to the RR Message Server.  It immediately emits a
 \lstinline{'join_channel'} message, using the channel passed in from
 the Kubernetes API call on it's creation. \\
 
-\begin{lstlisting}[language=Python,basicstyle=\linespread{0.5}\ttfamily,caption={RR Translation Main},captionpos=b]
+\begin{lstlisting}[language=Python,basicstyle=\linespread{0.5}\ttfamily\small,caption={RR Translation Main},captionpos=b]
 if __name__ == '__main__':
     channel = sys.argv[1]
     sio.connect('http://rr-message-server-load-balancer:8000')
@@ -855,7 +855,7 @@ After joining the appropriate channel, \lstinline{sio} waits to
 recieve an \lstinline{'rr_command'}.  The first part of
 \lstinline{sio}'s \lstinline{'rr_command'} event handler is shown below:\\
 
-\begin{lstlisting}[language=Python,basicstyle=\linespread{0.5}\ttfamily,caption={RR Command Event Handler},captionpos=b]
+\begin{lstlisting}[language=Python,basicstyle=\linespread{0.5}\ttfamily\small,caption={RR Command Event Handler},captionpos=b]
 @sio.on('rr_command')
 def on_rr_command(data):
 
@@ -881,7 +881,7 @@ class, \lstinline{rri}, is initialized in the same scope as
 control the rr subprocess, as well as a collection of methods to parse
 rr output, the three most important of which are shown below: \\
 
-\begin{lstlisting}[language=Python,basicstyle=\linespread{0.5}\ttfamily,caption={RRInterface},captionpos=b]
+\begin{lstlisting}[language=Python,basicstyle=\linespread{0.5}\ttfamily\small,caption={RRInterface},captionpos=b]
 def get_full_rr_response(self, command):
     response = self.gdbmi.write(command)
     while(not(self.end(response) or self.exited(response))):
@@ -982,7 +982,375 @@ process further in the future.
 
 \subsection{Frontend/API Server}\label{api}
 
-We just need this in here for the ref for now. TODO.
+The second major backend system consists of the Frontend/API Server
+and database.  This system is responsible for serving the frontend
+webapp, as well as processing all API requests, such as those to
+authenticate users and create new RR Debug Sessions.  The builtin
+React development server is used to serve the frontend webapp and
+redirect API requests to the Flask API server during development.  For
+both security and performance reasons this should be changed to a
+combination of a more robust solution like Nginx \cite{nginx} and a
+production suitable web server for production.  The relationships
+between components and overall process will remain unchanged after
+this migration.
+\par
+
+Since the entire webapp is one page, the process for serving it is
+completely standard.  The server recieves a request for the index page
+of the website, and returns the compiled React webapp that makes up
+the homepage.  The process for API requests is more involved, and an
+example is outlined below:
+
+\begin{figure}[h!]
+
+  \includegraphics[scale=1]{login_request}
+  \centering
+  \caption{API Request Process---Login}
+  \label{rr:detailed}
+\end{figure}
+
+\begin{enumerate}
+\item The client makes a POST request to the \lstinline{'/login'} URL.
+  This request contains the necessary data to log in the user.
+\item The frontend server forwards the request of a URL it does not
+  recognize to the API server running in the same Pod on a different
+  port.
+\item The API server recognizes the \lstinline{'/login'} route, and
+  communicates with the database to attempt to log in the user.
+\item The API server returns the result of the login request, which is
+  returned by the frontend server to the client.
+\end{enumerate}
+
+\subsubsection{Frontend/API Server Configuration}
+
+The Frontend/API Server uses Yarn \cite{yarn} to manage packages.
+When a Frontend/API Server Pod is deployed, the Pod's startup script
+uses the \lstinline{yarn start} and \lstinline{yarn start-api}
+commands to start the frontend server and API server respectively.
+These scripts are defined in the server's \lstinline{package.json}
+configuration file:\\
+
+\begin{lstlisting}[basicstyle=\linespread{0.5}\ttfamily\small,caption={Frontend/API Server Configuration},captionpos=b]
+  "start": "react-scripts start",
+  "start-api": "cd api && flask run --no-debugger",
+  .
+  .
+  .
+  "proxy": "http://localhost:5000",
+\end{lstlisting}
+
+Also of note in \lstinline{package.json} is the instruction to proxy
+the API server, which is running on port 5000.  This achieves the
+automatic forwarding of API requests to the API server described
+above.  Since API requests are proxied through the same address
+serving the frontend webapp, there are no issues with cross-origin
+requests.
+
+\subsubsection{The API Server}
+
+The API server is implimented using Flask.  The server program
+consists of handlers for the various API routes and instances of two
+classes which communicate with the database/Kubernetes API:
+\lstinline{TranslationPodManager} and \lstinline{UserManager}.  The
+full structure of the API Server program, \lstinline{api.py} is shown
+below:
+
+\begin{figure}[h!]
+
+  \includegraphics[scale=1]{api_structure}
+  \centering
+  \caption{Structure of the API Server}
+  \label{rr:detailed}
+\end{figure}
+
+Care was taken to abstract as much as possible in the design of the
+API server and the classes it instantiates.  The two classes
+instantiated by \lstinline{api.py}, \lstinline{TranslationPodManager}
+and \lstinline{UserManager}, each instantiate another class which
+interacts with the database, \lstinline{DatabaseController}, as an
+instance variable.  \lstinline{TranslationPodManager} further
+instantiates the Kubernetes Core V1 Python API to communicate with the
+cluster in order to create/delete pods.  This process of abstraction
+ensures that the database, underlying cluster structure, and
+authentication methods can all change without significant changes
+needing to be made to \lstinline{api.py}.
+\par
+
+The most significant improvement that could be made to this structure
+would be to break the \lstinline{UserManager} and
+\lstinline{TranslationPodManager} instances out into seperate programs
+running on their own Pods in the cluster.  This would allow changes to
+be made in those classes, say to update the process of deleting Pods,
+without needing to update the entire Frontend/API Server Pod.  For the
+time being, the relative simplicity of the API means that the added
+complexity and overhead of implementing a method to communicate
+between dedicated \lstinline{TranslationPodManager} and
+\lstinline{UserManager} Pods and Pods running the Frontend/API Server
+doesn't seem worthwhile.  This may change in the future.
+\par
+
+Currently supported API requests are as follows:
+
+\begin{enumerate}
+\item \lstinline{'/login'}: Logs in the user given by
+  \lstinline{'name'}, or, (given the rather lax development security)
+  creates a user if none matching \lstinline{'name'} exists.  Returns
+  the name of the user.
+\item \lstinline{'/channel'}: How users join RR Debug Sessions.  Binds
+  the user given by \lstinline{'name'} to an RR Debug Session Pod
+  matching \lstinline{'channel'} in the database, if such a Pod
+  exists.  Returns the channel.
+\item \lstinline{'/pods'}: How the client gets a list of RR Debug
+  Session Pods the user is currently participating in.  Returns the
+  channels for all RR Debug Session Pods who the user, given by
+  \lstinline{'name'}, is currently bound to in the database.
+\item \lstinline{'/examples}: How the client gets a list of example RR
+  Debug Session Pod names.  Returns all names of example RR Debug
+  Session Pods that exist in the database.
+\item \lstinline{'/new'}: Creates a new RR Debug Session Pod based on
+  the name given by \lstinline{'program'}.  Binds the user, given by
+  \lstinline{'name'}, to the Pod.  Returns the channel of the Pod.
+  This request is the most complex, and is covered in more detail
+  below.
+\item \lstinline{'/delete'}: Deletes a binding between the user given
+  by \lstinline{'name'} and the RR Debug Session Pod given by
+  \lstinline{'channel'}.  If there are no bindings left between the
+  Pod and users (if all the users have left the debug session),
+  deletes the Pod from the database and the cluster.  Returns
+  \lstinline{True}.
+\end{enumerate}
+
+All the API request handlers listed above return an error message in
+the case of an error occuring during the processing of an API request.
+Since most errors that could occur would either be the result of
+unanticipated issues on the part of the user, or of some unforseen
+catostrophic internal error, informing users of error specifics would
+be unhelpful.  Some \lstinline{TranslationPodManager} and
+\lstinline{UserManager} functions throw specific errors in the event
+of duplicate usernames, channels that do not exist, etc.  These errors
+are caught and meaningful error messages are returned to the frontend
+webapp, which can then pass them on to the user.
+\par
+
+To examine the process of processing an API request, it makes sense to
+look at the most complex example, creating a new RR Debug Session Pod.
+This example shows the process for processing an API POST request,
+interacting with the database, and dynamically creating a Pod.  All
+API requests follow a similar procedure.
+
+\paragraph{Processing a POST Request---Extracting Information}
+
+Below is the route handler for the \lstinline{'/new'} URL, as well as
+the instantiation of \lstinline{TranslationPodManager} and
+\lstinline{UserManager}.\\
+
+\begin{lstlisting}[language=Python,basicstyle=\linespread{0.5}\ttfamily\small,caption={API Server New RR Debug Session Event Handler},captionpos=b]
+tpm = podmanager.TranslationPodManager(
+                 url='mongodb://database-load-balancer',
+                 port=27017)
+um = usermanager.UserManager(
+                 url='mongodb://database-load-balancer',
+                 port=27017)
+app = Flask(__name__)
+
+@app.route('/new', methods=['POST'])
+def new():
+    try:
+        name = request.get_json()['name']
+        program = request.get_json()['program']
+        channel = tpm.create_pod([name], program)
+        return {'channel': channel}
+    except:
+        return {'error': 'Internal Error'}
+\end{lstlisting}
+
+All API routes only support POST requests.  The route handler first
+extracts the relavant information from the POST request body, in this
+case \lstinline{name} and \lstinline{program}.  \lstinline{name}
+always corresponds the user who is making the request's username, and
+\lstinline{program} corresponds to the name of the example RR Debug
+Session image to be used.
+\par
+
+\lstinline{new} then calls \lstinline{TranslationPodManager}'s
+\lstinline{create_pod} function to create a new RR Debug Session Pod.
+\lstinline{create_pod} can bind multiple users to a Pod when it is
+created, so \lstinline{name} is passed inside a list.
+
+\paragraph{The Database} Before drilling into \lstinline{create_pod},
+it may be helpful to examine the MongoDB database which
+\lstinline{TranslationPodManager} and \lstinline{UserManager} interact
+with.  The database consists of three collections: \lstinline{users},
+\lstinline{pods}, and \lstinline{examples}.  Below is an example
+record from each collection:
+
+\begin{figure}[h!]
+
+  \includegraphics[scale=1]{database_example}
+  \centering
+  \caption{Database Record Examples}
+  \label{rr:detailed}
+\end{figure}
+
+\lstinline{pods} and \lstinline{users} have a many-to-many
+relationship.  Each user can be bound to an unlimited number of pods,
+and vice versa.  The \lstinline{DatabaseController} class includes
+functions to efficiently retrieve \lstinline{users} and
+\lstinline{pods} given one another, and to create/destroy bindings
+between \lstinline{users} and \lstinline{pods}.
+\par
+
+\lstinline{examples} are independent of \lstinline{users} and
+\lstinline{pods}.  The continer registry URLs of RR Debug Session
+example images are stored in the database so that new images can be
+easily added to the collaborative debugger upon creation.
+\par
+
+MongoDB keeps \lstinline{_id}s unique.  In addition, the collaborative
+debugger defines uniqueness constrains on \lstinline{users:name},
+\lstinline{pods:channel}, and \lstinline{examples:name} when the
+database is created.
+
+% \begin{lstlisting}[basicstyle=\linespread{0.5}\ttfamily\small,caption={Frontend/API Server Configuration},captionpos=b]
+% users:            pods:               examples:
+%   _id ObjectId      _id ObjectId        _id ObjectId
+%   name String       channel String      name String
+%   pods Array        users Array         container String
+
+% Example user:
+% {
+% 	"_id" : ObjectId("5fc14c622dc45448d67189b3"),
+% 	"name" : "sammy",
+% 	"pods" : [
+% 		ObjectId("5fc14d5b2dc45448d67189b4"),
+% 		ObjectId("5fc59acb2dc45448d67189b6")
+% 	]
+% }
+
+% Example pod:
+% {
+% 	"_id" : ObjectId("5fc14d5b2dc45448d67189b4"),
+% 	"channel" : "19452",
+% 	"users" : [
+% 		ObjectId("5fc14c622dc45448d67189b3"),
+% 		ObjectId("5fc317d22dc45448d67189b5")
+% 	]
+% }
+
+% Example example:
+% {
+% 	"_id" : ObjectId("5fc14d50b92a752776d3fd7d"),
+% 	"name" : "hash",
+% 	"container" : "example-container-registry.com/sproj/..."
+% }
+% \end{lstlisting}
+
+\paragraph{Processing a POST Request---Dynamic Pod Creation}
+
+To dynamically create a Pod, \lstinline{create_pod} gets the container
+registry URL of the image to base the Pod on, creates the new Pod,
+binds users to the Pod, and returns the channel the Pod was created
+with.  The first part of the function is shown below:\\
+
+\begin{lstlisting}[language=Python,basicstyle=\linespread{0.5}\ttfamily\small,caption={Pod Creation 1},captionpos=b]
+def create_pod(self, names, program):
+  examples = self.get_examples()
+  image = None
+  try:
+    image = examples[program]
+  except:
+    raise NoSuchExampleError
+\end{lstlisting}
+
+\lstinline{create_pod} calls \lstinline{TranslationPodManager}'s
+\lstinline{get_examples} method to get a list of RR Debug Session
+example image names and container registry URLs from the database.  In
+the event that the user has somehow pased a spurious image name or has
+passed a name when there are no images, an exception is raised.
+Otherwise, a RR Debug Session Pod schema is created using the image:\\
+
+
+\begin{lstlisting}[language=Python,basicstyle=\linespread{0.5}\ttfamily\small,caption={Pod Creation 2},captionpos=b]
+  dep = {'apiVersion': 'v1',
+         'kind': 'Pod',
+         'metadata': {'labels':
+                      {'purpose': 'translate-rr'}},
+         'spec': {'containers':
+                  [{'image': image,
+                    'name': 'rr-test-container',
+                    'command': ['sh'],
+                    'args': ['startup.sh'],
+                    'securityContext':
+                    {'capabilities':
+                     {'add': ['SYS_PTRACE']}}}],
+                    'restartPolicy': 'OnFailure'}}
+\end{lstlisting}
+
+This schema, represented as a dictionary in Python, is identical to
+the YAML representation of the RR Debug Session Pod creation schema
+shown in (\ref{podschema}) with the exception of \lstinline{args}
+which will be updated further in a later step.  Finally,
+\lstinline{create_pod} does the
+work necessary to dynamically create a Pod:\\
+
+\begin{lstlisting}[language=Python,basicstyle=\linespread{0.5}\ttfamily\small,caption={Pod Creation 3},captionpos=b]
+  channel = self.dbc.add_pod(
+            self.dbc.get_userids_by_name(names))
+  dep['metadata']['name'] = channel
+  dep['spec']['containers'][0]['args'].append(channel)
+  resp = self.v1.create_namespaced_pod(
+         body=dep, namespace='default')
+  # Wait to return the channel until the pod is live
+  # and read to recieve incomming communication
+  status = self.v1.read_namespaced_pod_status(
+           channel, 'default').status.container_statuses
+  while status == None or status[0].state.running == None:
+    time.sleep(1)
+    status = self.v1.read_namespaced_pod_status(
+             channel, 'default').status.container_statuses
+  return channel
+\end{lstlisting}
+
+First, \lstinline{DatabaseController}'s \lstinline{add_pod} method is
+called to insert a new \lstinline{pods} record into the database.
+\lstinline{add_pod} randomly generates a new five digit
+\lstinline{channel} for the Pod, using the uniqueness constraint
+imposed on \lstinline{pods:channel} to ensure an unused
+\lstinline{channel} is generated.  If no channels are open an error is
+raised.  Otherwise, the users passed to \lstinline{add_pod} are bound
+to the new Pod in the database, and \lstinline{channel} is returned.
+This process has the effect of limiting the number of simultaneous RR
+Debug Sessions that can be in use at the same time to 89999, and of
+slowing as more channels are used.  Given the few current users, the
+likelyhood of a collision when generating a new channel is low enough
+that a more advanced method is unnecessary.
+\par
+
+Next, the name of the container is updated to \lstinline{channel}.  In
+addition, the startup arguments are updated to include
+\lstinline{channel}.  This is how \lstinline{channel} is passed to the
+\lstinline{startup.sh} script and eventually used to join a channel on
+the RR Message Server in \lstinline{rrtranslation.py}
+(\ref{buildingchannel} \& \ref{joiningchannel}).
+\par
+
+The Kubernetes API is then finally used to create the Pod.  The Pod is
+created in the default namespace.  This could be changed to logically
+isolate dynamically and statically created Pods with minimal hassle,
+since Kubernetes' DNS resolution can connect pods accros namespaces.
+If Pod creation fails, an error will be thrown.  Otherwise, a loop is
+used to wait until \lstinline{rrtranslation.py} is running inside the
+Pod.  Once the Pod is ready, \lstinline{channel} is returned.
+
+\paragraph{Processing a POST Request---Returning a Response}
+
+Most request handlers, \lstinline{'/new'} included, simply return a
+JSON serializable dicitionary containing whatever results the API
+Server's instance of \lstinline{TranslationPodManager} or
+\lstinline{UserManager} returned, or an error message.  The
+\lstinline{'/new'} handler returns \lstinline{'channel': channel} so
+that the frontend webapp's socket.io client can join the channel
+corresponding to the RR Debug Session Pod that was just created.
 
 \subsection{Webapp}\label{webapp}
 
