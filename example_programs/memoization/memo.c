@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <stdio.h>
+#include <time.h>
 
 #define HASHSIZE 100
 
@@ -26,7 +27,6 @@ struct pair *search(int k)
   return NULL;
 }
 
-/* The bug here is that they forget to use strdup */
 struct pair *insert(int key, int value)
 {
   struct pair *pp;
@@ -77,9 +77,20 @@ int fib_memo (int n) {
   return pp->value;
 }
 
+double timer(int (f)(int), int i, int *result){
+  clock_t start = clock();
+  *result = f(i);
+  clock_t finish = clock();
+  return (double)(finish - start) / CLOCKS_PER_SEC;
+}
+
 int main(){
   int term = 30;
-  
-  printf("Fib recursive: %d\nFib iterative: %d\nFib memoization: %d\n",
-	 fib_rec(term), fib_itr(term), fib_memo(term));
+  int fr, fi, fm;
+  double tfr, tfi, tfm;
+  tfr = timer(&fib_rec, term, &fr);
+  tfi = timer(&fib_itr, term, &fi);
+  tfm = timer(&fib_memo, term, &fm);
+  printf("Fib recursive: time=%f result=%d\nFib iterative: time=%f result=%d\nFib memoization: time=%f result=%d\n",
+	 tfr, fr, tfi, fi, tfm, fm);
 }

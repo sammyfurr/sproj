@@ -99,12 +99,19 @@
 
 \section{Introduction}
 
+Programmers spend large amounts of time debugging.  They often use
+debuggers to assist them in this process of diagnosing sometimes
+inexplicable problems with their code.  Though debuggers are primarily
+used to hunt down hiden mistakes, they are also powerful tools to
+understand program execution.
+\par
+
 The goal of this project is to create a collaborative debugger to aid
-in the teaching of debugging.  The collaborative debugger aims to help
-teachers integrate this undertaught skill into their classes.  It
+in the teaching of debugging.  The collaborative debugger hopes to
+help teachers integrate this undertaught skill into their classes.  It
 realizes the benefits of collaborative programming and teaching
-debugging by providing a platform that is genuinely useful to students
-and teachers.
+debugging by providing a platform that aims to be useful to both
+students and teachers.
 
 \subsection{Motivation}
 
@@ -234,7 +241,7 @@ the collaborative debugger must fufill two key requirements:
   debugging and programs being debugged.
 \end{enumerate}
 
-\subsection{Encouraging Collaboration}
+\subsection{Encouraging Collaboration} \label{exisitingcollab}
 
 A large number of tools exist to facilitate collaborative programming.
 COVID19 has greatly increased the demand for tools that not only make
@@ -249,16 +256,16 @@ collaborative text-editors, input and output from all users is synced.
 \par
 
 The collaborative debugger aims to provide a similar experience to
-Replit.  Students should be able to start a debugging session, easily
-invite other students, and interact with the debugger in a way that
-makes it easy to share their knowledge.  By allowing multiple users to
-interact with the same debugging session together in real-time, the
-collaborative debugger lets students share experience and work through
-problems together.  The debugger also makes it easy for teachers to
-demonstrate debugging techniques remotely to multiple students, any of
-whom can also interact with the debugger.  Since debugging sessions
-are hosted remotely, users can start a session in one location and
-resume it later from a different computer.
+tools like Replit.  Students should be able to start a debugging
+session, easily invite other students, and interact with the debugger
+in a way that makes it easy to share their knowledge.  By allowing
+multiple users to interact with the same debugging session together in
+real-time, the collaborative debugger lets students share experience
+and work through problems together.  The debugger also makes it easy
+for teachers to demonstrate debugging techniques remotely to multiple
+students, any of whom can also interact with the debugger.  Since
+debugging sessions are hosted remotely, users can start a session in
+one location and resume it later from a different computer.
 \par
 
 \subsection{Enhancing Student's Understanding}
@@ -273,43 +280,159 @@ which students can debug repeatedly in order to build debugging skills
 and to learn about the execution process.
 \par
 
-The aim is to provide students with an experience they can directly
-reference when using rr or gdb in the future, as well as one which is
-seamless to encourage the acquisition of debugging skills.
+Currently, there are three example debug sessions included with the
+collaborative debugger:
 
-\subsection{Existing Tools that Enable Collaborative Programming} \label{exisitingcollab}
+\begin{enumerate}
+\item \lstinline{hash}: an example of classic pointer confusion.  The
+  hashtable implementation included with the program is slightly
+  bugged, where failing to call \lstinline{strncpy} results in the
+  value for each key-value pair in the hash pointing to the same
+  location in memory.  This is particuarly useful example for learning
+  about setting watchpoints and breakpoints, as well as basic
+  procedures to step through code.
+\item \lstinline{smash}: a brief example of stack smashing.  A badly
+  designed call to \lstinline{sscanf} results in a portion of the call
+  stack being overwritten, and the process is killed as a result of
+  stack smashing.  This example focuses on printing and examining
+  memory locations.
+\item \lstinline{memoization}: a program that demonstrates the
+  difference between a recursive, iterative, and memoized recursive
+  implimentation of the classic nth fibonacci number function.  This
+  example focuses on examining the stack under conditions produced by
+  different types of functions.
+\end{enumerate}
 
-\section{Tools Used}
+\lstinline{memoization} will be covered in detail in the following
+section on the frontend of the collaborative debugger (\ref{webapp}).
+All three examples show how teachers can design debugging sessions
+around specific concepts.  The collaborative debugger should make it
+easy to distribute these sessions and for students to learn from them
+collaboratively.
+\par
+
+Students using all three examples would benefit greatly from
+visualization tools to help understand pointer locations, the process
+space, and data structures.  The steps necessary to implement
+visualization tools in the collaborative debugger are discussed
+further in (\ref{next}).
+\par 
+
+The aim of the collaborative debugger is to provide students with an
+experience they can directly reference when using similar debuggers in
+the future, as well as one which is seamless to encourage the
+acquisition of debugging skills.  Creating such a platform will
+hopefully encourage both students and teachers to explore the
+undertaught area of debugging.
+
+\section{Frontend Webapp}\label{webapp}
+
+Before diving into the construction of the frontend webapp, it's
+helpful to look at the steps two students would take to debug the
+\lstinline{memoization} example program remotely.
 
 \begin{figure}[h!]
 
-  \includegraphics[scale=.8]{overall_system}
+  \includegraphics[width=\textwidth]{memoization}
   \centering
-  \caption{Overview of the Collaborative Debugger}
+  \caption{Debugging the Memoization Example Session}
   \label{debugger:overview}
 \end{figure}
 
-The next sections give an overview of the various tools used to create
-the collaborative debugger.  The debugger consists of:
-
 \begin{enumerate}
-\item A frontend web app built using React (\ref{react}) that presents
-  a debugging interface to the end user.
-\item A distributed backend managed by Kubernetes (\ref{k8s}), split
-  into three parts:
-  \begin{enumerate}
-  \item A Pod for each debugging instance which runs the rr debugger
-    (\ref{rr}).  These communicate directly with users through
-    WebSocket server Pods. (\ref{socketio}).
-  \item Pods running a frontend server written in Node.js which works
-    in tandem with an API server created using Flask
-    (\ref{flask/node}).  The API server manages creation and
-    destruction of debug sessions, as well as authentication.
-  \item A MongoDB (\ref{mongodb}) database.
-  \end{enumerate}
+\item Students A and B both log into the collaborative debugger from
+  different computers.
+\item Student A creates a new Debug Session by clicking the button for
+  \lstinline{memoization} under ``New Session''.  A few moments later,
+  they're presented with the main screen of the debugger.
+\item Using the session code (17734 in the example above), Student B
+  joins the Debug Session.
+\item Both students can now interact with the same debugger remotely.
+  Input and output from the debugger and the current source file are
+  synced between all students.  Students can work together to
+  understand the reasons why memoization often improves the execution
+  time of recursive programs.
 \end{enumerate}
 
-\subsection{Kubernetes}\label{k8s}
+Notice that the debugging window in the example shown above is called
+``rr''.  rr is an enhancment to gdb that is foundational in the
+collaborative debugger's ability to deterministically record and
+replay program execution. rr and its role in the collaborative
+debugger will be covered extensively in (\ref{rrpods}).  Users
+interact with rr through the collaborative debugger's frontend.
+
+\subsection{Tools Used}
+
+The frontend of the collaborative debugger must handle constant
+changes in state as users participate in the process outlined above.
+The frontend uses the following tools to manage state and display
+output.
+
+\subsubsection{React}\label{react}
+
+React is JavaScript library that simplifies creating user interfaces
+and managing state \cite{react}.  React's state management is of
+particular importance to the collaborative debugger's frontend.  State
+constantly changes as users create/delete debugging sessions, join
+existing sessions, and communicate with rr.  React allows classes and
+functions to encapsulate components such as a list of existing
+debugging sessions, a view of the current program's source code, and
+the terminal interface with rr.  Instances of these classes maintain
+state and update efficiently.
+\par
+
+The frontend makes extensive use of JSX, syntax which allows the
+inclusion of segments of HTML code within a React app written in
+JavaScript.  This makes it easy for each component of the one-page
+webapp to hide/show subcomponents as state changes.
+
+\subsubsection{Monaco and Xterm.js}\label{xtermjs/monaco}
+
+After joining or creating a debugging session, users spend most of
+their time interacting collaboratively with rr.  Their primary
+interface to rr is through Xterm.js, a frontend component that makes
+it easy to emulate terminal behavior in the browser \cite{xtermjs}.
+With a few control methods, it is simple to provide a terminal
+interface to rr that is virtually indistinguishable from a local
+session.  By using the Xterm.js based interface, students can learn to
+use rr (and by extension gdb) collaboratively, and directly translate
+that knowledge to individual work.
+\par
+
+In addition to the terminal interface, the frontend shows a view of
+the current source file being debugged.  The Monaco Editor
+\cite{monaco} is used to display this source view.  Though more
+complex than is strictly necessary to display code, Monaco makes it
+easy to format and syntax-highlight.  Using Monaco also simplifies the
+future addition of editing source code, should the need arise.
+React's state management allows updating text in the editor as
+efficiently as possible.
+
+
+\section{Backend Design Overview}
+
+The design of the collaborative debugger's backend is heavily
+distributed, allowing individual components to be modified without the
+whole system needing to be reconfigured.  Kubernetes in conjunction
+with Docker are used to create the backend of the collaborative
+debugger.
+
+\subsection{Tools Used}
+
+Kubernetes and Docker were chosen largely so that new Debug Sessions
+could be easily and securely created on demand.
+
+\subsubsection{Docker}\label{docker}
+
+Docker is containerization software.  Docker containers encapsulate
+applications and their dependencies while sharing their host's kernel.
+This allows for lightweight, portable, and secure execution of complex
+programs \cite{docker}.  All programs in the collaborative debugger's
+backend run in Docker containers.  Docker containers' lightweight
+nature and security are instrumental when trying to quickly create
+containers to run user-defined code.
+
+\subsubsection{Kubernetes}\label{k8s}
 
 Kubernetes is the defacto standard in container orchestration
 software.  It provides a layer of abstraction on top of normal
@@ -332,162 +455,12 @@ these features, in tandem with the ease of Kubernetes deployment on a
 managed Kubernetes service\cite{do_managed_k8s} greatly accelerated
 development.
 
-\subsection{Mozilla's rr}\label{rr}
-
-\subsubsection{Overview}
-
-rr is ``a lightweight tool for recording, replaying and debugging
-execution of applications''\cite{rr-repo}. rr allows a programmer to
-record the execution of a program on any compatible machine and replay
-the execution later.  This enhances GDB's ability to ``time-travel''
-when debugging, using commands such as \lstinline{reverse-continue}
-and \lstinline{reverse-stepi}\cite{gdbman} to step backwards and
-forwards through a program's execution.  Through a novel encapsulation
-of the execution space, rr is able to deterministically record and
-replay the execution of syscalls and other process behavior that
-differs run-to-run.  This is invaluable when trying to debug behavior
-that is not entirely dependent on the code being debugged.  A typical
-workflow in rr consists of recording an inexplicable error, replaying
-execution to find the area in which the error occurs, and then
-narrowing in on the bug not by re-running the entire program, but by
-progressing back and forth through execution in the problem area.
-\par
-
-rr is an ideal tool for teaching debugging because it allows
-instructors to record execution of a program and design a debugging
-example with the knowledge that normally non-deterministic events will
-be repeatable, and that any input they provide to the program will be
-exactly replicated.  With the collaborative debugger, teachers can
-record a program's execution and design a debugging lesson which
-students can work on together.  The repeatability of rr means that
-students can focus on debugging, and teachers can create as specific
-examples as they please.  The use of rr is the most significant step
-the collaborative debugger takes to addressing the lack of
-back-tracing ability/coverage found in existing tools for teaching
-debugging\cite{10.1145/3286960.3286970}.
-
-\subsubsection{Limitations}
-
-In comparison to solutions like PANDA\cite{10.1145/2843859.2843867}
-that rely on capturing the entire state of of a virtual machine to
-replay execution, rr records and replays faster, produces far smaller
-files, and doesn't force execution inside of a
-VM.\cite{DBLP:journals/corr/OCallahanJFHNP17} The trade off for these
-benefits are two major system limitations: rr is only compatible with
-the Linux kernel, and it's deterministic recording and replay relies
-on a feature that is only found on modern \textit{Intel} x86 CPUs.
-These limitations influenced the development of this project as a
-webapp similar to existing tools for collaborative programming.
-\par
-
-Luckily, the speed and size benefits of rr lend themselves well to
-non-local execution.  In conjunction with Kubernetes, it takes a few
-seconds to create a new container running rr and connect to web
-clients.
-
-\subsection{pygdbmi}
-
-In order to ``support the development of systems which use the
-debugger as just one small component of a larger system'', GDB
-provides a machine-oriented interface called GDB/MI \cite{gdbman}. rr
-supports interaction through GDB/MI, and using the interface was a
-natural choice for the collaborative debugger.  In addition to being
-far easier to interact with from within a program, the structured,
-machine-friendly output of GDB/MI lends itself in particular to future
-development of visualization aids in the collaborative debugger.
-\par
-To parse rr output into Python dictionaries and to easily control rr
-as a subprocess, pygdbmi \cite{pygdbmi} is used in each debugging Pod.
-pygdbmi's abstraction simplifies programatically controlling rr.  A
-Pod can receive a command from the client, pass it to rr, and respond
-without having to deal with parsing GDB/MI output or with directly
-managing the rr process.
-
-\subsection{Socket.IO}\label{socketio}
-
-To speed communication, the collaborative debugger uses WebSockets to
-directly connect web clients and the Pods running rr.  Socket.IO is a
-library that extends WebSockets.  It provides backup incase a
-WebSocket connection cannot be established, enables automatic
-reconnection and disconnection detection, and adds support for
-namespaces \cite{socketio}.  The collaborative debugger uses the
-standard JavaScript implementation of Socket.IO on the client side.
-Messages are passed through a server to individual debugging Pods,
-both of which use the Python implementation of Socket.IO,
-python-socket.io \cite{python_socketio}.
-
-\subsection{MongoDB}\label{mongodb}
-
-The collaborative debugger uses a database to store information about
-users, Pods, and example debugging sessions.  Due to it's speed of
-deployment and natural interaction with the object-oriented languages
-used to create the project, MongoDB was chosen as database software
-\cite{mongodb}.
-
-\subsection{Flask and Node.js}\label{flask/node}
-
-The primary server for the collaborative debugger is split into two
-sections: a simple Node.js \cite{node} server that serves the frontend
-webapp, and an API server created using Flask \cite{flask}.  While in
-development, the builtin React (\ref{react}) development server
-is used to serve the frontend.  This makes debugging the frontend far
-easier.
-\par
-
-An API server is necessary to authenticate users and to provide a
-means to create/delete debugging sessions.  Since the rest of the
-backend was created using Python, Flask was chosen to create the API
-server.  Flask is a lightweight web application framework which lends
-itself perfectly to interacting with the Python MongoDB and Kubernetes
-APIs.
-
-\subsection{React}\label{react}
-
-React is JavaScript library that simplifies creating user interfaces
-and managing state \cite{react}.  React's state management is of
-particular importance to the collaborative debugger's frontend.  State
-constantly changes as users create/delete debugging sessions, join
-existing sessions, and communicate with rr.  React allows classes to
-encapsulate components such as a list of existing debugging sessions,
-a view of the current program's source code, and the terminal
-interface with rr.  Instances of these classes maintain state
-and update efficiently.
-\par
-The frontend makes extensive use of JSX, syntax which allows the
-inclusion of segments of HTML code within a React app written in
-JavaScript.  This makes it easy for each component of the one-page
-webapp to hide/show subcomponents as state changes.
-
-\subsection{Monaco and Xterm.js}\label{xtermjs/monaco}
-
-After joining or creating a debugging session, users spend most of
-their time interacting collaboratively with rr.  Their primary
-interface to rr is through Xterm.js, a frontend component that makes
-it easy to emulate terminal behavior in the browser \cite{xtermjs}.
-With a few control methods, it is simple to provide a terminal
-interface to rr that is virtually indistinguishable from a local
-session.  By using the Xterm.js based interface, students can learn to
-use rr (and by extension gdb) collaboratively, and directly translate
-that knowledge to individual work.
-\par
-
-In addition to the terminal interface, the frontend shows a view of
-the current source file being debugged.  The Monaco Editor
-\cite{monaco} is used to display this source view.  Though more
-complex than is strictly necessary to display code, Monaco makes it
-easy to format and syntax-highlight.  Using Monaco also simplifies the
-future addition of editing source code, should the need arise.
-React's state management allows updating text in the editor as
-efficiently as possible.
-
-\section{Design}
+\subsection{Overview}
 
 The collaborative debugger consists of a distributed Kubernetes
 backend and frontend React webapp.  Kubernetes was chosen for the
 backend primarally so that a Pod could be created dynamically for each
-debugging session.  The design of the backend is heavily distributed,
-allowing individual components to be modified without the whole system
-needing to be reconfigured.
+debugging session.  
 
 \begin{figure}[h!]
 
@@ -507,9 +480,9 @@ collaborative debugger:
   \textit{Database Pod}.  This class of Pods are manually created when
   the cluster that will run the backend is first initialized.  The RR
   Message Server Pods and Frontend/API Server Pods may be created
-  using Deployments \cite{k8s_docs} to allow later scaling, where
-  multiple Pods running the same application may be created to
-  facilitate increased load.
+  using Deployments \cite{k8s_docs} to allow scaling, where multiple
+  Pods running the same application may be created to facilitate
+  increased load.
 \item Dynamically created Pods.  This class of Pod contains the
   individual instances of \textit{RR Debug Session Pods} that are
   created on request by the API server.  When a client requests a new
@@ -548,8 +521,8 @@ session is assigned at 5 digit identifier at creation, which is used
 to join sessions in progress.
 \par
 
-Each component of the backend and frontend will be discussed in depth
-in the following sections.
+Each component of the backend will be discussed in depth in the
+following sections.
 
 \subsection{Configuration and Setup}
 
@@ -745,7 +718,7 @@ IP address on port 3000 is redirected automatically by Kubernetes to
 any Pod running the Frontend/API Server.  The Load Balancer determines
 which Pod is the most suitable given current demands on the system.
 
-\subsection{RR Debug Sessions \& RR Message Server}
+\section{RR Debug Sessions \& RR Message Server}
 
 At the heart of the collaborative debugger is the RR Debug Session.
 Every time a user wants to debug a new program execution, an RR Debug
@@ -790,7 +763,28 @@ a response is as follows:
   they both recieve the response.
 \end{enumerate}
 
-\subsubsection{RR Message Server}
+\subsection{RR Message Server}
+
+\subsubsection{Tools Used}
+
+The collaborative debugger needs an effecient way for clients to
+communicate with running RR Debug Sessions. The Socket.IO library was
+selected to construct this efficient communication pathway.
+
+\paragraph{Socket.IO}\label{socketio}
+
+To speed communication, the collaborative debugger uses WebSockets to
+directly connect web clients and the Pods running rr.  Socket.IO is a
+library that extends WebSockets.  It provides backup incase a
+WebSocket connection cannot be established, enables automatic
+reconnection and disconnection detection, and adds support for
+namespaces \cite{socketio}.  The collaborative debugger uses the
+standard JavaScript implementation of Socket.IO on the client side.
+Messages are passed through a server to individual debugging Pods,
+both of which use the Python implementation of Socket.IO,
+python-socket.io \cite{python_socketio}.
+
+\subsubsection{Overview}
 
 The RR Message server is remarkably simple, consisting of just 3
 important functions:
@@ -838,10 +832,78 @@ Server Pods recieve the command.  The same process happens in reverse
 for \lstinline{'rr_response'}s, with only the frontend socket.io
 clients having a handler defined for \lstinline{'rr_response'}.
 
+\subsection{RR Debug Session} \label{rrpods}
 
-\subsubsection{RR Debug Session}
+\subsubsection{Tools Used}
 
-\paragraph{Building Example Pods} \label{buildingchannel}
+\paragraph{Mozilla's rr}\label{rr}
+
+rr is ``a lightweight tool for recording, replaying and debugging
+execution of applications''\cite{rr-repo}. rr allows a programmer to
+record the execution of a program on any compatible machine and replay
+the execution later.  This enhances GDB's ability to ``time-travel''
+when debugging, using commands such as \lstinline{reverse-continue}
+and \lstinline{reverse-stepi}\cite{gdbman} to step backwards and
+forwards through a program's execution.  Through a novel encapsulation
+of the execution space, rr is able to deterministically record and
+replay the execution of syscalls and other process behavior that
+differs run-to-run.  This is invaluable when trying to debug behavior
+that is not entirely dependent on the code being debugged.  A typical
+workflow in rr consists of recording an inexplicable error, replaying
+execution to find the area in which the error occurs, and then
+narrowing in on the bug not by re-running the entire program, but by
+progressing back and forth through execution in the problem area.
+\par
+
+rr is an ideal tool for teaching debugging because it allows
+instructors to record execution of a program and design a debugging
+example with the knowledge that normally non-deterministic events will
+be repeatable, and that any input they provide to the program will be
+exactly replicated.  With the collaborative debugger, teachers can
+record a program's execution and design a debugging lesson which
+students can work on together.  The repeatability of rr means that
+students can focus on debugging, and teachers can create as specific
+examples as they please.  The use of rr is the most significant step
+the collaborative debugger takes to addressing the lack of
+back-tracing ability/coverage found in existing tools for teaching
+debugging\cite{10.1145/3286960.3286970}.
+
+In comparison to solutions like PANDA\cite{10.1145/2843859.2843867}
+that rely on capturing the entire state of of a virtual machine to
+replay execution, rr records and replays faster, produces far smaller
+files, and doesn't force execution inside of a
+VM.\cite{DBLP:journals/corr/OCallahanJFHNP17} The trade off for these
+benefits are two major system limitations: rr is only compatible with
+the Linux kernel, and it's deterministic recording and replay relies
+on a feature that is only found on modern \textit{Intel} x86 CPUs.
+These limitations influenced the development of this project as a
+webapp similar to existing tools for collaborative programming.
+\par
+
+Luckily, the speed and size benefits of rr lend themselves well to
+non-local execution.  In conjunction with Kubernetes, it takes a few
+seconds to create a new container running rr and connect to web
+clients.
+
+\paragraph{pygdbmi}
+
+In order to ``support the development of systems which use the
+debugger as just one small component of a larger system'', gdb
+provides a machine-oriented interface called gdb/mi \cite{gdbman}. rr
+supports interaction through gdb/mi, and using the interface was a
+natural choice for the collaborative debugger.  In addition to being
+far easier to interact with from within a program, the structured,
+machine-friendly output of gdb/mi lends itself in particular to future
+development of visualization aids in the collaborative debugger.
+\par
+To parse rr output into Python dictionaries and to easily control rr
+as a subprocess, pygdbmi \cite{pygdbmi} is used in each debugging Pod.
+pygdbmi's abstraction simplifies programatically controlling rr.  A
+Pod can receive a command from the client, pass it to rr, and respond
+without having to deal with parsing gdb/mi output or with directly
+managing the rr process.
+
+\subsubsection{Building Example Pods} \label{buildingchannel}
 
 The process for building RR Debug Session example images is differs
 slightly from other images used by the collaborative debugger.
@@ -852,7 +914,7 @@ based on the lasted official Ubuntu container image, installs rr,
 python, and all necessary packages as well as the app that will run on
 the final image, \lstinline{rrtranslation.py}.
 
-\begin{lstlisting}[language=Dockerfile,basicstyle=,caption={RR Debug Session Hash Example---Dockerfile},captionpos=b]
+\begin{lstlisting}[language=Dockerfile,basicstyle=\linespread{0.5}\ttfamily,caption={RR Debug Session Hash Example---Dockerfile},captionpos=b]
 FROM example-container-registry.com/sproj/...
   
 WORKDIR /home/debug/app/
@@ -886,7 +948,7 @@ the example Pod and copy the recording into the appropriate folder
 during the build process.  Since rr recordings are portable, the
 example will replay without issue in the RR Debug Session Pod.
 
-\paragraph{The RR Translation Program} \label{joiningchannel}
+\subsubsection{The RR Translation Program} \label{joiningchannel}
 
 The RR Translation program consists of two main components: a socket.io
 client, \lstinline{sio}, and an instance of the
@@ -935,7 +997,7 @@ function necessary to pass a message to rr and recieve a response,
 When the program starts, an instance of the \lstinline{RRInterface}
 class, \lstinline{rri}, is initialized in the same scope as
 \lstinline{sio}.  \lstinline{RRInterface} contains an instance of the
-\lstinline{GDBController} class from pygdbmi to interface with rr and
+\lstinline{gdbController} class from pygdbmi to interface with rr and
 control the rr subprocess, as well as a collection of methods to parse
 rr output, the three most important of which are shown below: 
 
@@ -1035,19 +1097,79 @@ inheritance used to create example debug session pods is designed to
 be as simple as possible, though a more fully featured frontend could
 simplify this process further in the future.
 
-\subsection{Frontend/API Server}\label{api}
+% \section{Tools Used}
+
+% \begin{figure}[h!]
+
+%   \includegraphics[scale=.8]{overall_system}
+%   \centering
+%   \caption{Overview of the Collaborative Debugger}
+%   \label{debugger:overview}
+% \end{figure}
+
+% The next sections give an overview of the various tools used to create
+% the collaborative debugger.  The debugger consists of:
+
+% \begin{enumerate}
+% \item A frontend web app built using React (\ref{react}) that presents
+%   a debugging interface to the end user.
+% \item A distributed backend managed by Kubernetes (\ref{k8s}), split
+%   into three parts:
+%   \begin{enumerate}
+%   \item A Pod for each debugging instance which runs the rr debugger
+%     (\ref{rr}).  These communicate directly with users through
+%     WebSocket server Pods. (\ref{socketio}).
+%   \item Pods running a frontend server written in Node.js which works
+%     in tandem with an API server created using Flask
+%     (\ref{flask/node}).  The API server manages creation and
+%     destruction of debug sessions, as well as authentication.
+%   \item A MongoDB (\ref{mongodb}) database.
+%   \end{enumerate}
+% \end{enumerate}
+
+\section{Frontend/API Server}\label{api}
 
 The second major backend system consists of the Frontend/API Server
 and database.  This system is responsible for serving the frontend
 webapp, as well as processing all API requests, such as those to
-authenticate users and create new RR Debug Sessions.  The builtin
-React development server is used to serve the frontend webapp and
-redirect API requests to the Flask API server during development.  For
-both security and performance reasons this should be changed to a
-combination of a more robust solution like Nginx \cite{nginx} and a
-production suitable web server for production.  The relationships
-between components and overall process will remain unchanged after
-this migration.
+authenticate users and create new RR Debug Sessions.
+
+\subsection{Tools Used}
+
+\subsubsection{MongoDB}\label{mongodb}
+
+The collaborative debugger uses a database to store information about
+users, Pods, and example debugging sessions.  Due to it's speed of
+deployment and natural interaction with the object-oriented languages
+used to create the project, MongoDB was chosen as database software
+\cite{mongodb}.
+
+\subsubsection{Flask and Node.js}\label{flask/node}
+
+The primary server for the collaborative debugger is split into two
+sections: a simple Node.js \cite{node} server that serves the frontend
+webapp, and an API server created using Flask \cite{flask}.  While in
+development, the builtin React (\ref{react}) development server
+is used to serve the frontend.  This makes debugging the frontend far
+easier.
+\par
+
+An API server is necessary to authenticate users and to provide a
+means to create/delete debugging sessions.  Since the rest of the
+backend was created using Python, Flask was chosen to create the API
+server.  Flask is a lightweight web application framework which lends
+itself perfectly to interacting with the Python MongoDB and Kubernetes
+APIs.
+
+\subsection{Overview}
+
+The builtin React development server is used to serve the frontend
+webapp and redirect API requests to the Flask API server during
+development.  For both security and performance reasons this should be
+changed to a combination of a more robust solution like Nginx
+\cite{nginx} and a production suitable web server for production.  The
+relationships between components and overall process will remain
+unchanged after this migration.
 \par
 
 Since the entire webapp is one page, the process for serving it is
@@ -1076,7 +1198,7 @@ example is outlined below:
   returned by the frontend server to the client.
 \end{enumerate}
 
-\subsubsection{Frontend/API Server Configuration}
+\subsection{Frontend/API Server Configuration}
 
 The Frontend/API Server uses Yarn \cite{yarn} to manage packages.
 When a Frontend/API Server Pod is deployed, the Pod's startup script
@@ -1101,7 +1223,7 @@ above.  Since API requests are proxied through the same address
 serving the frontend webapp, there are no issues with cross-origin
 requests.
 
-\subsubsection{The API Server}
+\subsection{The API Server}
 
 The API server is implimented using Flask.  The server program
 consists of handlers for the various API routes and instances of two
@@ -1193,7 +1315,7 @@ This example shows the process for processing an API POST request,
 interacting with the database, and dynamically creating a Pod.  All
 API requests follow a similar procedure.
 
-\paragraph{Processing a POST Request---Extracting Information}
+\subsubsection{Processing a POST Request---Extracting Information}
 
 Below is the route handler for the \lstinline{'/new'} URL, as well as
 the instantiation of \lstinline{TranslationPodManager} and
@@ -1232,7 +1354,7 @@ Session image to be used.
 \lstinline{create_pod} can bind multiple users to a Pod when it is
 created, so \lstinline{name} is passed inside a list.
 
-\paragraph{The Database} Before drilling into \lstinline{create_pod},
+\subsubsection{The Database} Before drilling into \lstinline{create_pod},
 it may be helpful to examine the MongoDB database which
 \lstinline{TranslationPodManager} and \lstinline{UserManager} interact
 with.  The database consists of three collections: \lstinline{users},
@@ -1300,7 +1422,7 @@ database is created.
 % }
 % \end{lstlisting}
 
-\paragraph{Processing a POST Request---Dynamic Pod Creation}
+\subsubsection{Processing a POST Request---Dynamic Pod Creation}
 
 To dynamically create a Pod, \lstinline{create_pod} gets the container
 registry URL of the image to base the Pod on, creates the new Pod,
@@ -1397,7 +1519,7 @@ If Pod creation fails, an error will be thrown.  Otherwise, a loop is
 used to wait until \lstinline{rrtranslation.py} is running inside the
 Pod.  Once the Pod is ready, \lstinline{channel} is returned.
 
-\paragraph{Processing a POST Request---Returning a Response}
+\subsubsection{Processing a POST Request---Returning a Response}
 
 Most request handlers, \lstinline{'/new'} included, simply return a
 JSON serializable dicitionary containing whatever results the API
@@ -1407,11 +1529,7 @@ Server's instance of \lstinline{TranslationPodManager} or
 that the frontend webapp's socket.io client can join the channel
 corresponding to the RR Debug Session Pod that was just created.
 
-\subsection{Webapp}\label{webapp}
-
-TODO
-
-\section{Next Steps}
+\section{Next Steps} \label{next}
 
 TODO
 
