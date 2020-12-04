@@ -71,6 +71,13 @@
   extendedchars=true
 }
 
+\lstset{frame=tb,
+  aboveskip=8mm,
+  columns=flexible,
+  numbers=none,
+  tabsize=3
+}
+
 \graphicspath{{./images/}}
 
 \author{Sammy Furr}
@@ -169,20 +176,19 @@ equally by their collegiate counterparts.\par
 \subsubsection{Methods for Teaching Debugging}
 
 Similarly to research on the value of teaching debugging, research
-into how to best teach debugging is self-admittedly sparse.  Chan et
-al. allow that ``in general research on how to improve debugging is
-sporadic''---an observation that leads them to research a framework to
-reduce the complexity of teaching
-debugging\cite{10.1145/3286960.3286970}.  To organize their framework,
-they split debugging knowledge into 5 categories: \textit{Domain},
-\textit{System}, \textit{Procedural}, \textit{Strategic}, and
-\textit{Experiential}.  They then review different debugging tools and
-teaching aids---from those that involve writing code to games---and
-map tools to the knowledge areas they seek to address.  After an
-evaluation of a host of different tools, they claim to find a few
-significant faults in current debugging teaching platforms.  The
-collaborative debugger primarily seeks to address the lack of
-back-tracing ability/coverage found in their research.
+into how to best teach debugging is sparse.  Chan et al. allow that
+``in general research on how to improve debugging is sporadic''---an
+observation that leads them to research a framework to reduce the
+complexity of teaching debugging\cite{10.1145/3286960.3286970}.  To
+organize their framework, they split debugging knowledge into 5
+categories: \textit{Domain}, \textit{System}, \textit{Procedural},
+\textit{Strategic}, and \textit{Experiential}.  They then review
+different debugging tools and teaching aids---from those that involve
+writing code to games---and map tools to the knowledge areas they seek
+to address.  After an evaluation of a host of different tools, they
+claim to find a few significant faults in current debugging teaching
+platforms.  The collaborative debugger primarily seeks to address the
+lack of back-tracing ability/coverage found in their research.
 
 \subsubsection{The Value of Collaborative Programming}
 
@@ -194,7 +200,8 @@ improves student's work \cite{10.1145/1145287.1145293}.  These
 benefits of confidence and correctness are present when paired and
 non-paired students are given identical assignments
 \cite{10.1145/1026487.1008043}, further indicating that the simple act
-of collaboration definitively benefits computer science students.\par
+of collaboration definitively benefits computer science students.
+\par
 
 It seems that the benefits in confidence that result from teaching
 debugging should be magnified by teaching debugging collaboratively.
@@ -207,20 +214,70 @@ language in order to introduce widely applicable programming
 principles.  By using a specific collaborative platform to introduce
 debugging principles, students may realize the same benefits in both
 confidence \textit{and} correctness that they do from pair programming
-in introductory comptuer science classes.\par
-
-The collaborative debugger aims to provide such a platform.
-
-\subsection{Existing Tools that Enable Collaborative Programming} \label{exisitingcollab}
-
-TODO: write about glitch, repl.it, etc.
-
+in introductory comptuer science classes.
+\par
 
 Debuggers exist at an intersection of tools and skills similar to
 programming languages themselves. By becoming familiar with a specific
-debugger, students learn techniques and paradigms necessary to use all
-debuggers effectively.
+debugger, students may learn techniques and paradigms necessary to use
+all debuggers effectively.  The collaborative debugger aims to provide
+the optimal platform for students to learn debugging skills.
 
+\section{Requirments}
+
+In order to provide the best platform for both teachers and students,
+the collaborative debugger must fufill two key requirements:
+
+\begin{enumerate}
+\item It must encourage collaboration through a seamless experience.
+\item It must make it easier to enhance students' understanding of
+  debugging and programs being debugged.
+\end{enumerate}
+
+\subsection{Encouraging Collaboration}
+
+A large number of tools exist to facilitate collaborative programming.
+COVID19 has greatly increased the demand for tools that not only make
+collaboration easier, but make it easy remotely.  The tool that was
+most influential in the design of the collaborative debugger,
+Replit\cite{replit}, enables remote collaborative programming.
+
+Replit provides a simple browser-based IDE for over 50 languages.
+Programmers choose a language and can edit and run code
+collaboratively inside the Replit webapp.  Similarly to other
+collaborative text-editors, input and output from all users is synced.
+\par
+
+The collaborative debugger aims to provide a similar experience to
+Replit.  Students should be able to start a debugging session, easily
+invite other students, and interact with the debugger in a way that
+makes it easy to share their knowledge.  By allowing multiple users to
+interact with the same debugging session together in real-time, the
+collaborative debugger lets students share experience and work through
+problems together.  The debugger also makes it easy for teachers to
+demonstrate debugging techniques remotely to multiple students, any of
+whom can also interact with the debugger.  Since debugging sessions
+are hosted remotely, users can start a session in one location and
+resume it later from a different computer.
+\par
+
+\subsection{Enhancing Student's Understanding}
+
+Apart from the benefits to understanding that are realized through
+collaboration, the collaborative debugger should enhance students'
+understanding of debugging in ways that a traditional debugger cannot.
+It aims to do this by allowing teachers to design and distribute
+lessons in the form of debugging sessions.  Each debugging session is
+a lesson consisting of a deterministic recording of program execution,
+which students can debug repeatedly in order to build debugging skills
+and to learn about the execution process.
+\par
+
+The aim is to provide students with an experience they can directly
+reference when using rr or gdb in the future, as well as one which is
+seamless to encourage the acquisition of debugging skills.
+
+\subsection{Existing Tools that Enable Collaborative Programming} \label{exisitingcollab}
 
 \section{Tools Used}
 
@@ -236,9 +293,10 @@ The next sections give an overview of the various tools used to create
 the collaborative debugger.  The debugger consists of:
 
 \begin{enumerate}
-\item A frontend web app built using React (\ref{react}) that presents a debugging
-  interface to the end user.
-\item A distributed backend managed by Kubernetes (\ref{k8s}), split into three parts:
+\item A frontend web app built using React (\ref{react}) that presents
+  a debugging interface to the end user.
+\item A distributed backend managed by Kubernetes (\ref{k8s}), split
+  into three parts:
   \begin{enumerate}
   \item A Pod for each debugging instance which runs the rr debugger
     (\ref{rr}).  These communicate directly with users through
@@ -556,7 +614,7 @@ Pods are created in five steps:
 
 Docker containers are created using a Dockerfile.  The Dockerfile used
 to create the container image for the RR Message
-Server is shown below:\\
+Server is shown below:
 
 \begin{lstlisting}[language=Dockerfile,caption={RR Message Server Dockerfile},captionpos=b]
 # Base Image
@@ -625,9 +683,9 @@ The Pod configuration schema for most Pods in the collaborative
 debugger is fairly generic.  It consists of a \lstinline{name}, an
 \lstinline{image} sourced from the container registry, and in the case
 of pods that need to interact with a load balancer, an
-\lstinline{app}.\\
+\lstinline{app}.
 
-\begin{lstlisting}[language=YAML,basicstyle=\linespread{0.5}\ttfamily\small,caption={RR Debug Session Schema},captionpos=b]
+\begin{lstlisting}[language=YAML,basicstyle=\linespread{0.5}\ttfamily,caption={RR Debug Session Schema},captionpos=b]
 apiVersion: v1
 kind: Pod
 metadata:
@@ -664,9 +722,9 @@ Services are the first components of the collaborative debugger
 created after the cluster is initiallized.  The three Services used by
 the debugger are all statically created.  Like statically created
 Pods, schemas that define Services are applied manually using the
-\lstinline{kubectl apply} command.\\
+\lstinline{kubectl apply} command.
 
-\begin{lstlisting}[language=YAML,basicstyle=\linespread{0.5}\ttfamily\small,caption={Frontend Load Balancer Schema},captionpos=b]
+\begin{lstlisting}[language=YAML,basicstyle=\linespread{0.5}\ttfamily,caption={Frontend Load Balancer Schema},captionpos=b]
 apiVersion: v1
 kind: Service
 metadata:
@@ -735,9 +793,9 @@ a response is as follows:
 \subsubsection{RR Message Server}
 
 The RR Message server is remarkably simple, consisting of just 3
-important functions:\\
+important functions:
 
-\begin{lstlisting}[language=Python,basicstyle=\linespread{0.5}\ttfamily\small,caption={RR Message Server},captionpos=b]
+\begin{lstlisting}[language=Python,basicstyle=\linespread{0.5}\ttfamily,caption={RR Message Server},captionpos=b]
 @sio.on('join_channel')
 def join_channel(sid, data):
     sio.enter_room(sid, data['channel'])
@@ -792,9 +850,9 @@ use.  Example container images are based on the primary RR Debug
 Session image, RR Translation.  The build process for this image,
 based on the lasted official Ubuntu container image, installs rr,
 python, and all necessary packages as well as the app that will run on
-the final image, \lstinline{rrtranslation.py}.\\
+the final image, \lstinline{rrtranslation.py}.
 
-\begin{lstlisting}[language=Dockerfile,basicstyle=\small,caption={RR Debug Session Hash Example---Dockerfile},captionpos=b]
+\begin{lstlisting}[language=Dockerfile,basicstyle=,caption={RR Debug Session Hash Example---Dockerfile},captionpos=b]
 FROM example-container-registry.com/sproj/...
   
 WORKDIR /home/debug/app/
@@ -805,9 +863,9 @@ COPY startup.sh .
 
 The Dockerfile shown above is for a simple hash program RR Debug
 Session example.  The build process copies over any necessary files,
-as well as a startup script:\\
+as well as a startup script:
 
-\begin{lstlisting}[basicstyle=\linespread{0.5}\ttfamily\small,caption={Example Startup Script},captionpos=b]
+\begin{lstlisting}[basicstyle=\linespread{0.5}\ttfamily,caption={Example Startup Script},captionpos=b]
 gcc -g -o hash hash.c
 rr record ./hash
 python3 rrtranslation.py $1
@@ -842,9 +900,9 @@ be broken out into its own class if more complexity is added.
 The RR Translation program's socket.io client instance begins by
 connecting to the RR Message Server.  It immediately emits a
 \lstinline{'join_channel'} message, using the channel passed in from
-the Kubernetes API call on it's creation. \\
+the Kubernetes API call on it's creation. 
 
-\begin{lstlisting}[language=Python,basicstyle=\linespread{0.5}\ttfamily\small,caption={RR Translation Main},captionpos=b]
+\begin{lstlisting}[language=Python,basicstyle=\linespread{0.5}\ttfamily,caption={RR Translation Main},captionpos=b]
 if __name__ == '__main__':
     channel = sys.argv[1]
     sio.connect('http://rr-message-server-load-balancer:8000')
@@ -853,9 +911,9 @@ if __name__ == '__main__':
 
 After joining the appropriate channel, \lstinline{sio} waits to
 recieve an \lstinline{'rr_command'}.  The first part of
-\lstinline{sio}'s \lstinline{'rr_command'} event handler is shown below:\\
+\lstinline{sio}'s \lstinline{'rr_command'} event handler is shown below:
 
-\begin{lstlisting}[language=Python,basicstyle=\linespread{0.5}\ttfamily\small,caption={RR Command Event Handler},captionpos=b]
+\begin{lstlisting}[language=Python,basicstyle=\linespread{0.5}\ttfamily,caption={RR Command Event Handler},captionpos=b]
 @sio.on('rr_command')
 def on_rr_command(data):
 
@@ -879,9 +937,9 @@ class, \lstinline{rri}, is initialized in the same scope as
 \lstinline{sio}.  \lstinline{RRInterface} contains an instance of the
 \lstinline{GDBController} class from pygdbmi to interface with rr and
 control the rr subprocess, as well as a collection of methods to parse
-rr output, the three most important of which are shown below: \\
+rr output, the three most important of which are shown below: 
 
-\begin{lstlisting}[language=Python,basicstyle=\linespread{0.5}\ttfamily\small,caption={RRInterface},captionpos=b]
+\begin{lstlisting}[language=Python,basicstyle=\linespread{0.5}\ttfamily,caption={RRInterface},captionpos=b]
 def get_full_rr_response(self, command):
     response = self.gdbmi.write(command)
     while(not(self.end(response) or self.exited(response))):
@@ -972,13 +1030,10 @@ natively.
 
 Effort is taken in the design of the RR Debug Session and RR Message
 Server to ensure students recieve a pleasant and near-identical
-experience to debugging locally in the future.  The aim is to provide
-students with an experience they can directly reference when using rr
-or gdb in the future, as well as one which is seamless to encourage
-the acquisition of debugging skills.  The system of inheritance used
-to create example debug session pods is designed to be as simple as
-possible, though a more fully featured frontend could simplify this
-process further in the future.
+experience to debugging locally in the future.  The system of
+inheritance used to create example debug session pods is designed to
+be as simple as possible, though a more fully featured frontend could
+simplify this process further in the future.
 
 \subsection{Frontend/API Server}\label{api}
 
@@ -1028,9 +1083,9 @@ When a Frontend/API Server Pod is deployed, the Pod's startup script
 uses the \lstinline{yarn start} and \lstinline{yarn start-api}
 commands to start the frontend server and API server respectively.
 These scripts are defined in the server's \lstinline{package.json}
-configuration file:\\
+configuration file:
 
-\begin{lstlisting}[basicstyle=\linespread{0.5}\ttfamily\small,caption={Frontend/API Server Configuration},captionpos=b]
+\begin{lstlisting}[basicstyle=\linespread{0.5}\ttfamily,caption={Frontend/API Server Configuration},captionpos=b]
   "start": "react-scripts start",
   "start-api": "cd api && flask run --no-debugger",
   .
@@ -1142,15 +1197,15 @@ API requests follow a similar procedure.
 
 Below is the route handler for the \lstinline{'/new'} URL, as well as
 the instantiation of \lstinline{TranslationPodManager} and
-\lstinline{UserManager}.\\
+\lstinline{UserManager}.
 
-\begin{lstlisting}[language=Python,basicstyle=\linespread{0.5}\ttfamily\small,caption={API Server New RR Debug Session Event Handler},captionpos=b]
+\begin{lstlisting}[language=Python,basicstyle=\linespread{0.5}\ttfamily,caption={API Server New RR Debug Session Event Handler},captionpos=b]
 tpm = podmanager.TranslationPodManager(
-                 url='mongodb://database-load-balancer',
-                 port=27017)
+                   url='mongodb://database-load-balancer',
+                   port=27017)
 um = usermanager.UserManager(
-                 url='mongodb://database-load-balancer',
-                 port=27017)
+                   url='mongodb://database-load-balancer',
+                   port=27017)
 app = Flask(__name__)
 
 @app.route('/new', methods=['POST'])
@@ -1211,7 +1266,7 @@ debugger defines uniqueness constrains on \lstinline{users:name},
 \lstinline{pods:channel}, and \lstinline{examples:name} when the
 database is created.
 
-% \begin{lstlisting}[basicstyle=\linespread{0.5}\ttfamily\small,caption={Frontend/API Server Configuration},captionpos=b]
+% \begin{lstlisting}[basicstyle=\linespread{0.5}\ttfamily,caption={Frontend/API Server Configuration},captionpos=b]
 % users:            pods:               examples:
 %   _id ObjectId      _id ObjectId        _id ObjectId
 %   name String       channel String      name String
@@ -1250,9 +1305,9 @@ database is created.
 To dynamically create a Pod, \lstinline{create_pod} gets the container
 registry URL of the image to base the Pod on, creates the new Pod,
 binds users to the Pod, and returns the channel the Pod was created
-with.  The first part of the function is shown below:\\
+with.  The first part of the function is shown below:
 
-\begin{lstlisting}[language=Python,basicstyle=\linespread{0.5}\ttfamily\small,caption={Pod Creation 1},captionpos=b]
+\begin{lstlisting}[language=Python,basicstyle=\linespread{0.5}\ttfamily,caption={Pod Creation 1},captionpos=b]
 def create_pod(self, names, program):
   examples = self.get_examples()
   image = None
@@ -1267,10 +1322,10 @@ def create_pod(self, names, program):
 example image names and container registry URLs from the database.  In
 the event that the user has somehow pased a spurious image name or has
 passed a name when there are no images, an exception is raised.
-Otherwise, a RR Debug Session Pod schema is created using the image:\\
+Otherwise, a RR Debug Session Pod schema is created using the image:
 
 
-\begin{lstlisting}[language=Python,basicstyle=\linespread{0.5}\ttfamily\small,caption={Pod Creation 2},captionpos=b]
+\begin{lstlisting}[language=Python,basicstyle=\linespread{0.5}\ttfamily,caption={Pod Creation 2},captionpos=b]
   dep = {'apiVersion': 'v1',
          'kind': 'Pod',
          'metadata': {'labels':
@@ -1283,7 +1338,7 @@ Otherwise, a RR Debug Session Pod schema is created using the image:\\
                     'securityContext':
                     {'capabilities':
                      {'add': ['SYS_PTRACE']}}}],
-                    'restartPolicy': 'OnFailure'}}
+                   'restartPolicy': 'OnFailure'}}
 \end{lstlisting}
 
 This schema, represented as a dictionary in Python, is identical to
@@ -1291,9 +1346,9 @@ the YAML representation of the RR Debug Session Pod creation schema
 shown in (\ref{podschema}) with the exception of \lstinline{args}
 which will be updated further in a later step.  Finally,
 \lstinline{create_pod} does the
-work necessary to dynamically create a Pod:\\
+work necessary to dynamically create a Pod:
 
-\begin{lstlisting}[language=Python,basicstyle=\linespread{0.5}\ttfamily\small,caption={Pod Creation 3},captionpos=b]
+\begin{lstlisting}[language=Python,basicstyle=\linespread{0.5}\ttfamily,caption={Pod Creation 3},captionpos=b]
   channel = self.dbc.add_pod(
             self.dbc.get_userids_by_name(names))
   dep['metadata']['name'] = channel
