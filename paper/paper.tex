@@ -78,21 +78,86 @@
   tabsize=3
 }
 
+% From https://tex.stackexchange.com/questions/89574/language-option-supported-in-listings
+
+\definecolor{lightgray}{rgb}{.9,.9,.9}
+\definecolor{darkgray}{rgb}{.4,.4,.4}
+\definecolor{purple}{rgb}{0.65, 0.12, 0.82}
+
+\lstdefinelanguage{JavaScript}{
+  keywords={typeof, new, true, false, catch, function, return, null, catch, switch, var, if, in, while, do, else, case, break},
+  keywordstyle=\color{blue}\bfseries,
+  ndkeywords={class, export, boolean, throw, implements, import, this},
+  ndkeywordstyle=\color{darkgray}\bfseries,
+  identifierstyle=\color{black},
+  sensitive=false,
+  comment=[l]{//},
+  morecomment=[s]{/*}{*/},
+  commentstyle=\color{purple}\ttfamily,
+  stringstyle=\color{red}\ttfamily,
+  morestring=[b]',
+  morestring=[b]"
+}
+
 \graphicspath{{./images/}}
 
-\author{Sammy Furr}
+\author{A Senior Project submitted to\\The Division of Science, Mathematics, and Computing\\of\\Bard College\\\\by\\Sammy Furr}
 \title{The Development of a Collaborative Tool to Teach Debugging}
 \date{\today}
 
 \begin{document}
 
 \begin{titlepage}
-  \maketitle
+  \linespread{1}
+    \begin{center}
+            
+        \Huge
+        The Development of a Collaborative Tool to Teach Debugging
+        
+        \vspace{4cm}
+       
+        \large
+        A Senior Project submitted to\\
+        The Division of Science, Mathematics, and Computing\\
+        of\\
+        Bard College\\
+        \vspace{1cm}
+        by\\
+        Sammy Furr
+        \vfill
+            
+        Annandale-on-Hudson, New York\\
+        December, 2020
+    \end{center}
 \end{titlepage}
 
 \begin{abstract}
-  TODO: write an abstract
+  \linespread{1}
+  Debugging is rarely formally taught, despite being used by
+  programmers every day.  Research indicates that it is valuable to
+  teach debugging, and suggests that teaching it collaboratively may
+  be maximally effective.  The goal of this project is to create a
+  collaborative debugger.  The debugger aims to be the ideal platform
+  to teach and learn debugging.  This paper briefly reviews relevant
+  literature which covers teaching debugging and that which focuses on
+  teaching programming collaboratively.  Most of the paper is devoted
+  to the design of the collaborative debugger.
 \end{abstract}
+
+\section{Acknowledgments}
+
+\begin{itemize}
+\item Keith O'Hara, my senior project advisor, for his constant
+  thoughtfulness about my project, his advice about the future, and
+  for giving me the oppurtunity to tutor for his classes.
+\item Mar Hicks and Kyle Hale, professors whose classes at IIT changed
+  my perspective on computer science.
+\item All my professors at Bard, particuarly Olga Voronina, Wakako
+  Suzuki, and Nate Shockey, whose encouragement of my interests
+  outside of computer science has been instrumental in continuing my
+  passion for it.
+\item My family and friends, for their constant love and support.
+\end{itemize}
 
 \tableofcontents
 \pagebreak
@@ -313,9 +378,9 @@ collaboratively.
 
 Students using all three examples would benefit greatly from
 visualization tools to help understand pointer locations, the process
-space, and data structures.  The steps necessary to implement
-visualization tools in the collaborative debugger are discussed
-further in (\ref{next}).
+space, and data structures.  As discussed in \ref{vistools}, adding
+vizualization tools to the collaborative debugger should be relatively
+easy.
 \par 
 
 The aim of the collaborative debugger is to provide students with an
@@ -327,16 +392,16 @@ undertaught area of debugging.
 
 \section{Frontend Webapp}\label{webapp}
 
-Before diving into the construction of the frontend webapp, it's
+Before diving into the construction of the frontend webapp, it may be
 helpful to look at the steps two students would take to debug the
-\lstinline{memoization} example program remotely.
+\lstinline{memoization} example program remotely:
 
 \begin{figure}[h!]
 
   \includegraphics[width=\textwidth]{memoization}
   \centering
   \caption{Debugging the Memoization Example Session}
-  \label{debugger:overview}
+  \label{frontend:rrterm}
 \end{figure}
 
 \begin{enumerate}
@@ -359,14 +424,17 @@ Notice that the debugging window in the example shown above is called
 collaborative debugger's ability to deterministically record and
 replay program execution. rr and its role in the collaborative
 debugger will be covered extensively in (\ref{rrpods}).  Users
-interact with rr through the collaborative debugger's frontend.
+interact with rr through the collaborative debugger's frontend.  Care
+has been taken to make the frontend as representative of rr as
+possible so that users can learn to use rr/gdb by using the
+collaborative debugger.
 
 \subsection{Tools Used}
 
 The frontend of the collaborative debugger must handle constant
 changes in state as users participate in the process outlined above.
 The frontend uses the following tools to manage state and display
-output.
+output:
 
 \subsubsection{React}\label{react}
 
@@ -408,6 +476,246 @@ future addition of editing source code, should the need arise.
 React's state management allows updating text in the editor as
 efficiently as possible.
 
+In order to easily integrate Monaco and Xterm.js into the React
+frontend, React wrapper libraries were used.  These are
+react-xterm\cite{reactxterm} and
+react-monaco-editor\cite{reactmonaco}.
+
+\subsection{Overview}
+
+React makes it easy to create simple webapps with no build
+configuration necessary through the use of the
+\lstinline{create-react-app} command.  This creates a structure and
+toolchain for a basic one-page application---suitable for the
+collaborative debugger.  Once this structure was created and any
+superfluous files/code were removed, it's wasn't necessary for the
+purposes of the collaborative debugger to directly edit any files
+except two: \lstinline{App.js} and \lstinline{App.css}.  The
+pre-defined build process takes care of transforming the React code
+defined in \lstinline{App.js} and the styles defined in
+\lstinline{App.css} into portable Javascript, HTML, and CSS.
+\par
+
+\lstinline{App.js} consists of a primary React Component class,
+\lstinline{Debugger}, as well as many secondary classes and functions.
+More complex components of the frontend, such as the Xterm.js
+interface to rr, are created as classes, while simple components like
+buttons are defined as functions.  All classes contain a
+\lstinline{render()} method responsible for returning HTML elements to
+display based on the state contained in the class.
+\lstinline{Debugger}'s \lstinline{render()} method is responsible for
+displaying all other components, based on whether the user is logged
+in, has selected a new session, etc.
+\par
+
+Many components ``lift state up'' to \lstinline{Debugger}.  This is
+accomplished by passing methods from \lstinline{Debugger} in as
+``props'' when elements are created in \lstinline{Debugger}'s
+\lstinline{render()} method:
+
+\begin{lstlisting}[language=Javascript,basicstyle=\linespread{0.5}\ttfamily,caption={Lifting State Up},captionpos=b]
+  onLogin(name) {
+    this.setState({user: name})
+    .
+    .
+    .
+  }
+  // In Debugger.render().  This is JSX.
+  login = <LoginForm onLogin={this.onLogin}/>;
+  
+  // In LoginForm.
+  this.props.onLogin(data.name);
+\end{lstlisting}
+
+\lstinline{Debugger}'s \lstinline{onLogin(name)} method changes the
+state of debugger to indicate that the user is logged in.  When an
+instance of \lstinline{LoginForm} is created in
+\lstinline{Debugger.render()}, \lstinline{onLogin(name)} is passed to
+it as a ``prop''.  The code for logging in the user can be contained
+in \lstinline{LoginForm}, but when it becomes necessary to change the
+state of the whole application to indicate that the user is logged in,
+\lstinline{LoginForm} calls \lstinline{Debugger.onLogin(name)},
+lifting state up to \lstinline{Debugger}.
+\par
+
+Other than methods to handle state and display components,
+\lstinline{Debugger} also contains the Socket.IO client that is used
+to communicate with the actual debugger running in the collaborative
+debugger's backend.  Socket.IO is a library that extends WebSockets.
+It and this communication process will be discussed in detail in
+(\ref{rrmessageserver}).  Similarly to how \lstinline{onLogin(name)}
+is passed as a property to \lstinline{LoginForm}, the Socket.IO client
+is passed to the most important component in the frontend,
+\lstinline{RRTerm}, when it is instantiated.
+
+\subsection{The Collaborative Interface to rr}
+
+As shown in Figure \ref{frontend:rrterm}, the primary piece of the
+collaborative debugger's frontend is an interface to the rr debugger
+backend.  This interface currently consists of a view of the user's
+source code and a terminal interface to rr.  These are contained
+within the most important class in the frontend: \lstinline{RRTerm}.
+This section will outline the process of sending an rr command to the
+backend and displaying a response.
+\par
+
+In debugging the \lstinline{memoization} example program, users will
+want to display the call stack from within each implementation of the
+nth fibonacci number function.  To stop in \lstinline{fib_rec}, the
+recursive implementation, one user will want to set a breakpoint at
+line 52 in the source file.  To do this they will type the command
+\lstinline{break 52} and hit enter.  The command will be sent to the
+backend, and all users in the same debug session (17734 in Figure
+\ref{frontend:rrterm}) will see the debuggers response:\\
+\lstinline{Breakpoint 1 at 0x561c8fede303: file memo.c, line 52.}\\
+Users who did not send the command will see it displayed along with
+the response.
+
+\subsubsection{Sending a Command}
+
+\lstinline{RRTerm}'s state is instantiated as such:
+
+\begin{lstlisting}[language=Javascript,basicstyle=\linespread{0.5}\ttfamily,caption={RRTerm's State},captionpos=b]
+  this.state = {command: '',
+                  name: '',
+                  linum: 0,
+                  code: ''};
+\end{lstlisting}
+
+\lstinline{name}, \lstinline{linum}, and \lstinline{code} store
+information about the current source file being debugged.
+\lstinline{command} is the most important field for examing how
+commands are sent to the backend, as it holds the current command.
+\textit{Every time} the user types a character, \lstinline{command} is
+updated to reflect the current state of the Xterm.js component.  The
+code to handle keystrokes is shown below:
+
+\begin{lstlisting}[language=Javascript,basicstyle=\linespread{0.5}\ttfamily,caption={Handling Keystrokes},captionpos=b]
+  this.term.on('key', (key, ev) => {
+    const printable = !ev.altKey && !ev.ctrlKey && !ev.metaKey;
+    if (ev.key === 'Enter') {
+      // Disable input while we wait for the response from rr
+      this.term.disableStdin = true;
+      const c = this.state.command;
+      this.sendCommand(c);
+      this.setState({command: ''});
+    } else if (ev.key === 'Backspace') {
+      // Do not delete the prompt
+      if (this.term.buffers._activeBuffer.x > prompt_length) {
+        this.term.write('\b \b');
+        this.updateCommand(this.state.command, 'delete');
+      }
+    } else if (ev.key === 'ArrowUp') {
+    } else if (ev.key === 'ArrowDown') {
+    } else if (printable) {
+      this.term.write(key);
+      this.updateCommand(this.state.command, key);
+    }
+  });
+\end{lstlisting}
+
+Whenever the user types a printable key, the key is written to the
+terminal and \lstinline{command} is updated using the
+\lstinline{updateCommand} method.  If a user types \lstinline{brk},
+\lstinline{updateCommand} would be called three times, once for each
+keystroke.  Upon realizing they made a mistake when typing
+\lstinline{break 52}, the user would likely delete a character.  As
+long as the prompt (\lstinline{(rr)} followed by a space) would not be
+overwritten, the terminal is updated and \lstinline{updateCommand} is
+called again.  When the user hits the enter key the command is finally
+sent to the backend using \lstinline{sendCommand}.  To mimick the
+behavior of a local rr debug session and to prevent garbled input,
+writing to the terminal is disabled until a response is recieved.
+
+\subsubsection{Receiving a Response}
+
+All users connected to the same debug session will recieive responses
+to the commands sent by one user.  This is how collaboration is
+achieved in the collaborative debugger.  The JSON response object to
+\lstinline{break 52} recieved by all users is shown below:
+
+\begin{lstlisting}[basicstyle=\linespread{0.5}\ttfamily,caption={JSON Response},captionpos=b]
+{
+  channel: ``11734''
+  command: ``break 52''
+  from: ``1ed644ad87d44cd68121de3daa65adb4''
+  response: {
+    output: ``Breakpoint 2 at 0x561c8fede303: file memo.c, line 52.''
+    source: {
+      file_name: null
+      current_line: ``87''
+      contents: null
+    }
+  }
+}
+\end{lstlisting}
+
+The command has been issued from a breakpoint set at \lstinline{main},
+which is at line 87 in \lstinline{memo.c}.  Since the source file
+hasn't changed, \lstinline{source.file_name} and
+\lstinline{source.contents} are set to \lstinline{null}.
+\lstinline{output} contains the response from rr, while
+\lstinline{channel}, \lstinline{command}, and \lstinline{from} contain
+information necessary to display commands correctly for all users.
+
+\begin{lstlisting}[language=Javascript,basicstyle=\linespread{0.5}\ttfamily,caption={Processing a Response},captionpos=b]
+  this.props.socket.on('rr_response', (data) => {
+    if(data.from !== this.props.socket.id){
+      // Display commands from other clients
+      this.term.disableStdin = true;
+      this.term.clear();
+      this.term.write(data.command);
+    };
+    // Write a newline, but no prompt
+    this.term.writeln('');
+    // Write each line of the output to the terminal
+    data.response.output.split(/\n+/).forEach((l) => {
+      this.term.writeln(l);
+    });
+    this.term.prompt();
+    // Re-enable input.  See above and below.
+    this.term.disableStdin = false;
+    // If an error has occured, there wont be any new
+    // information about the location in the source file.
+    if(data.response.source != null) {
+      this.updateSource(data.response.source);
+    }
+  });
+\end{lstlisting}
+
+When a response is received, \lstinline{RRTerm} first checks to see if
+the response has originated from a different user.  If so, input is
+disabled, the current line is cleared, and the command that
+corresponds to the response is written to the terminal.  Each line of
+the response is then written to the terminal.  Finally, input is
+renabled, having been disabled either to write commands received from
+another user, or when the command was first sent.
+\lstinline{updateSource} is called to update the Monaco editor source
+file view.  Since \lstinline{break 52} was sent from a location
+already inside \lstinline{memo.c}, the source file name and contents
+are not updated, though the line number is changed.
+
+\subsection{Considerations} \label{vistools}
+
+The intention of much of the code described above, such as that to
+disable input after a command has been sent, is to mimic rr in a way
+that is invisible to the user.  The user experience is intended to be
+that of using a fully-fledged debugger collaboratively.  The source
+code view allows users to easily see what code they are working on
+together, and the terminal updates quickly whenever a user enters a
+command.
+\par
+
+Care has been taken to design the frontend in a modular fashion so
+that it can be easily extended in the future.  By sending additional
+data about program state in the response and creating new componenets,
+visualization tools could be easily added.  If further authentication
+features or the ability to edit source code are desired in the future,
+relevant components can be updated without the need to change the
+entire application.  Since the collaborative debugger depends heavily
+on interactions between it's frontend and backend, similar care has
+been taken in designing the backend, which will be described in the
+following sections.
 
 \section{Backend Design Overview}
 
@@ -763,7 +1071,7 @@ a response is as follows:
   they both recieve the response.
 \end{enumerate}
 
-\subsection{RR Message Server}
+\subsection{RR Message Server}\label{rrmessageserver}
 
 \subsubsection{Tools Used}
 
@@ -1075,6 +1383,8 @@ name, and contents.  If an error occurs at any point in the process, a
 detailed trace is emmitted for debugging purposes.  The trace should
 be ommited in production.
 \par
+
+\subsection{Considerations}
 
 Most of the complexity in the RR Translation program stems from
 parsing rr output.  The flow of data in the program is quite simple: a
@@ -1529,9 +1839,84 @@ Server's instance of \lstinline{TranslationPodManager} or
 that the frontend webapp's socket.io client can join the channel
 corresponding to the RR Debug Session Pod that was just created.
 
+\subsection{Considerations}
+
+The Frontend/API server connects all components of the collaborative
+debugger together.  It authenticates users through the database, joins
+the frontend and Kubernetes cluster through the dynamic creation of
+Pods, and starts the interaction between users and the programs they
+wish to debug.  Care has been taken to make it modular and extensible
+within reason, and additional authenication or pod creation features
+should be easy to add.
+\par
+
+The experience provided by invisible components such as the
+Frontend/API Server is just as important as that provided by the
+frontend webapp.  All components of the collaborative debugger
+hopefully come together to provide an experience that facilitates the
+teaching and learning of debugging.
+
 \section{Next Steps} \label{next}
 
-TODO
+\subsection{Features to Add}
+
+The current iteration of the collaborative debugger succesfully
+enables collaboration between students.  Significant effort has been
+taken to design the debugger in a way that makes collaboration
+seemless.  The collaborative debugger hopefully fulfills it's first
+requirment---to encourage collaboration.
+\par
+
+Though the collaborative debugger makes it easy for teachers to design
+and distribute debugging lessons, more work is necessary to fully
+fulfill the second goal---that of enhancing students' understanding of
+debugging and of programs being debugged.
+\par
+
+The most significant addition towards this goal would be that of
+frontend vizualization tools.  A simple visualization of the stack and
+registers would greatly expand students' understanding of the program
+being debugged in all three example sessions currently included with
+the collaborative debugger.  gdb/mi supports commands which give
+structured output of both these aspects of the execution space, and
+the frontend has been designed to make adding visualizations of them
+simple.  Adding visualization features will bring the collaborative
+debugger much closer towards hopefully fulfilling it's second
+requirement.
+
+\subsection{Testing Efficacy}
+
+Though a review of the research seems to indicate that a tool like the
+collaborative debugger should help make students more effective at
+debugging, further study is needed to draw conclusions.  First, more
+research is necessary to determine definitively if teaching debugging
+collaboratively is more effective than teaching it individually.
+Second, the collaborative debugger needs to be thoroughly tested to
+determine whether it is an ideal platform for collaborative debugging.
+\par
+
+A study similar to those undertaken in \cite{10.1145/1026487.1008043},
+\cite{10.1145/1145287.1145293}, and \cite{10.1145/3361721.3361724}
+could be done to test both these aspects.  Students participating in
+an introductory systems programming class could be split into three
+groups.  Group one could study debugging individually, using rr by
+themselves to progress through debugging sessions designed by the
+instructor.  Group two could study debugging in pairs, relying on
+existing tools such as video-conferencing software to facilitate
+collaboration.  In the final group, pairs would use the collaborative
+debugger to work together on the same debugging sessions as groups one
+and two.  Students' individual and pair performance in debugging both
+unseen and self-generated programs could then be tested.
+
+\subsection{Conclusions}
+
+The collaborative debugger aims to enourage collaboration and build
+students knowledge of debugging through careful design.  Many
+components of a distributed system come together to create a platform
+that hopefully benefits both teachers and students.  Through
+deliberate design, the collaborative debugger can conceivably be the
+ideal platform to teach and learn debugging, both remotely and
+in-person.
 
 \pagebreak
 \bibliographystyle{acm}
