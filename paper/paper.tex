@@ -132,14 +132,13 @@
 \end{titlepage}
 
 \begin{abstract}
-  \linespread{1}
-  Debugging is rarely formally taught, despite being used by
-  programmers every day.  Research indicates that it is valuable to
-  teach debugging, and suggests that teaching it collaboratively may
-  be maximally effective.  The goal of this project is to create a
-  collaborative debugger.  The debugger aims to be the ideal platform
-  to teach and learn debugging.  This paper briefly reviews relevant
-  literature which covers teaching debugging and that which focuses on
+  \linespread{1} Debugging is rarely formally taught, despite being
+  used by programmers every day.  Research indicates that it is
+  valuable to teach debugging, and suggests that teaching it
+  collaboratively may be maximally effective.  The goal of this
+  project is to create a collaborative debugger.  The debugger aims to
+  be the ideal platform to teach and learn debugging.  This paper
+  briefly reviews relevant literature covering teaching debugging and
   teaching programming collaboratively.  Most of the paper is devoted
   to the design of the collaborative debugger.
 \end{abstract}
@@ -153,7 +152,7 @@
 \item Mar Hicks and Kyle Hale, professors whose classes at IIT changed
   my perspective on computer science.
 \item All my professors at Bard, particularly Olga Voronina, Wakako
-  Suzuki, and Nate Shockey, whose encouragement of my interests
+  Suzuki, and Nathan Shockey, whose encouragement of my interests
   outside of computer science has been instrumental in continuing my
   passion for it.
 \item My family and friends, for their constant love and support.
@@ -183,17 +182,17 @@ students and teachers.
 \subsection{Motivation}
 
 Debugging is invaluable in writing and understanding code, yet it is
-rarely formally taught\cite{doi:10.1080/08993400802114581}.  We
-typically teach students programming structures, concepts, and
-languages, but leave them to learn the tools they use to write code by
-themselves.  This approach often works well---a programmer's choice of
-tools is often \textit{very} personal and students figure out how to
-configure an individualized workflow.  Perhaps because debuggers are
-tools, students are often expected to learn them with minimal
-guidance.  Unlike editors or reference guides however, effectively
-using a debugger requires a set of high-level, platform agnostic,
-teachable skills.  Teaching these skills is effective, and translates
-into better, faster, debugging and
+rarely formally taught\cite{doi:10.1080/08993400802114581}.  Students
+are typically taught programming structures, concepts, and languages,
+but are left to learn the tools they use to write code alone.  This
+approach often works well---a programmer's choice of tools is often
+\textit{very} personal and students figure out how to configure an
+individualized workflow.  Perhaps because debuggers are tools,
+students are often expected to learn them with minimal guidance.
+Unlike editors or reference guides however, effectively using a
+debugger requires a set of high-level, platform agnostic, teachable
+skills.  Teaching these skills is effective, and translates into
+better and faster debugging and
 programming\cite{10.1145/3286960.3286970}\cite{10.1145/3361721.3361724}.
 Teaching these debugging skills collaboratively will likely offer the
 same confidence and correctness benefits realized by teaching
@@ -336,7 +335,10 @@ and work through problems together.  The debugger also makes it easy
 for teachers to demonstrate debugging techniques remotely to multiple
 students, any of whom can also interact with the debugger.  Since
 debugging sessions are hosted remotely, users can start a session in
-one location and resume it later from a different computer.
+one location and resume it later from a different computer.  This is
+particularly beneficial for students who may not always have access to
+a computer or a machine capable of running the programs they wish to
+debug.
 \par
 
 \subsection{Enhancing Student's Understanding}
@@ -359,8 +361,8 @@ collaborative debugger:
   hashtable implementation included with the program is slightly
   bugged, where failing to call \lstinline{strncpy} results in the
   value for each key-value pair in the hash pointing to the same
-  location in memory.  This is particularly useful example for learning
-  about setting watchpoints and breakpoints, as well as basic
+  location in memory.  This is a particularly useful example for
+  learning about setting watchpoints and breakpoints, as well as basic
   procedures to step through code.
 \item \lstinline{smash}: a brief example of stack smashing.  A badly
   designed call to \lstinline{sscanf} results in a portion of the call
@@ -368,7 +370,7 @@ collaborative debugger:
   stack smashing.  This example focuses on printing and examining
   memory locations.
 \item \lstinline{memoization}: a program that demonstrates the
-  difference between a recursive, iterative, and memoized recursive
+  difference between a recursive, iterative, and memoized-recursive
   implementation of the classic nth Fibonacci number function.  This
   example focuses on examining the stack under conditions produced by
   different types of functions.
@@ -392,15 +394,16 @@ easy.
 The aim of the collaborative debugger is to provide students with an
 experience they can directly reference when using similar debuggers in
 the future, as well as one which is seamless to encourage the
-acquisition of debugging skills.  Creating such a platform will
-hopefully encourage both students and teachers to explore the
+acquisition of general debugging skills.  Creating such a platform
+will hopefully encourage both students and teachers to explore the
 undertaught area of debugging.
 
 \section{Frontend Webapp}\label{webapp}
 
 Before diving into the construction of the frontend webapp, it may be
 helpful to look at the steps two students would take to debug the
-\lstinline{memoization} example program remotely:
+\lstinline{memoization} example program remotely.  This example is
+covered in more detail in \ref{current}.
 
 \begin{figure}[h!]
 
@@ -481,9 +484,10 @@ webapp similar to existing tools for collaborative programming.
 \par
 
 Luckily, the speed and size benefits of rr lend themselves well to
-non-local execution.  In conjunction with Kubernetes (\ref{k8s}), it
-takes a few seconds to create a new container (\ref{docker}) running
-rr and connect to web clients.
+non-local execution.  In conjunction with tools used to create the
+backend of the collaborative debugger it takes a few seconds to create
+a new debug session running rr and connect it to the frontend webapp
+discussed in this section.
 
 \subsubsection{React}\label{react}
 
@@ -532,12 +536,39 @@ react-monaco-editor\cite{reactmonaco}.
 
 \subsection{Overview}
 
+% The frontend webapp communicates with a distributed backend.  A simple
+% diagram of the entire system is below.
+
+% \begin{figure}[h!]
+
+%   \includegraphics[scale=.8]{overall_system}
+%   \centering
+%   \caption{Overview of the Collaborative Debugger}
+%   \label{debugger:overview}
+% \end{figure}
+
+% The collaborative debugger consists of:
+
+% \begin{enumerate}
+% \item A frontend web app that presents a debugging interface to the
+%   end user.
+% \item A distributed backend split into three parts:
+%   \begin{enumerate}
+%   \item 
+%   \item Pods running a frontend server written in Node.js which works
+%     in tandem with an API server created using Flask
+%     (\ref{flask/node}).  The API server manages creation and
+%     destruction of debug sessions, as well as authentication.
+%   \item A MongoDB (\ref{mongodb}) database.
+%   \end{enumerate}
+% \end{enumerate}
+
 React makes it easy to create simple webapps with no build
 configuration necessary through the use of the
 \lstinline{create-react-app} command.  This creates a structure and
 toolchain for a basic one-page application---suitable for the
 collaborative debugger.  Once this structure was created and any
-superfluous files/code were removed, it's wasn't necessary for the
+superfluous files/code were removed, it wasn't necessary for the
 purposes of the collaborative debugger to directly edit any files
 except two: \lstinline{App.js} and \lstinline{App.css}.  The
 pre-defined build process takes care of transforming the React code
@@ -605,7 +636,9 @@ backend.  This interface currently consists of a view of the user's
 source code and a terminal interface to rr.  These are contained
 within the most important class in the frontend: \lstinline{RRTerm}.
 This section will outline the process of sending an rr command to the
-backend and displaying a response.
+backend and displaying a response.  Apart from sending simple API
+requests to start sessions or log users in and out, this communication
+process is where the frontend webapp spends most of its time.
 \par
 
 In debugging the \lstinline{memoization} example program, users will
@@ -617,8 +650,8 @@ line 52 in the source file.  To do this they will type the command
 backend, and all users in the same debug session (17734 in Figure
 \ref{frontend:rrterm}) will see the debuggers response:\\
 \lstinline{Breakpoint 1 at 0x561c8fede303: file memo.c, line 52.}\\
-Users who did not send the command will see it displayed along with
-the response.
+Users who did not send the command \lstinline{c} will see it displayed
+along with the response.
 
 \subsubsection{Sending a Command}
 
@@ -756,15 +789,15 @@ command.
 \par
 
 Care has been taken to design the frontend in a modular fashion so
-that it can be easily extended in the future.  By sending additional
-data about program state in the response and creating new components,
-visualization tools could be easily added.  If further authentication
-features or the ability to edit source code are desired in the future,
-relevant components can be updated without the need to change the
-entire application.  Since the collaborative debugger depends heavily
-on interactions between it's frontend and backend, similar care has
-been taken in designing the backend, which will be described in the
-following sections.
+that it can be easily extended in the future.  Visualization tools
+could be easily added by sending additional data about program state
+in the response and creating new components.  If further
+authentication features or the ability to edit source code are desired
+in the future, relevant components can be updated without the need to
+change the entire application.  Since the collaborative debugger
+depends heavily on interactions between its frontend and backend,
+similar care has been taken in designing the backend, which will be
+described in the following sections.
 
 \section{Backend Design Overview}
 
@@ -796,11 +829,11 @@ software.  It provides a layer of abstraction on top of normal
 containers, like those created by Docker.  By bundling one or more
 closely linked containers into a ``Pod'', Kubernetes is able to manage
 deployment and re-deployment of applications running inside
-containers.  It is trivial to create new Pods, or to create multiple
-Pods running the same application as needed within a Kubernetes
-cluster \cite{k8s}.  The speed at which even relatively large Pods can
-be created and the inherent security provided by containerization
-drove the decision to create a new Pod on the fly for each debugging
+containers.  It is trivial to create new Pods (or multiple Pods
+running the same application) as needed within a Kubernetes cluster
+\cite{k8s}.  The speed at which even relatively large Pods can be
+created and the inherent security provided by containerization drove
+the decision to create a new Pod on the fly for each debugging
 instance in the collaborative debugger.  This allows the debugger to
 provide a similar level of convenience to existing collaborative
 tools, such Replit (\ref{exisitingcollab}).
@@ -895,7 +928,7 @@ is similar, but the process of starting the Pods is more complicated.
 This process will be discussed in-depth in the section on the API
 server (\ref{api}).
 
-\subsubsection{Cluster Selection and Configuration}
+\subsubsection{Cluster Requirements and Configuration}
 
 Though Kubernetes aims to be largely platform-agnostic, the
 requirements of rr impose some restrictions on cluster setup and
@@ -904,10 +937,11 @@ on machines using relatively modern Intel x86 CPUs (Nehalem and
 beyond).  The clusters must run on an operating system using Linux
 kernel version 3.11 or higher \cite{rr-repo}.  Finally, in order for
 rr to be able to work efficiently, the
-\lstinline{kernel.perf_event_paranoid} parameter must be set to 1
-\cite{rr-repo}.  This should be done on every node in the cluster
-which will run RR Debug Sessions.  For the purposes of development, it
-has been set to 1 on all nodes in the collaborative debugger cluster.
+\lstinline{kernel.perf_event_paranoid} parameter must be set to
+\lstinline{1} \cite{rr-repo}.  This should be done on every node in
+the cluster which will run RR Debug Sessions.  For the purposes of
+development, it has been set to \lstinline{1} on all nodes in the
+collaborative debugger cluster.
 
 \subsubsection{Creating Pods}
 
@@ -985,12 +1019,12 @@ the same structure as the one outlined in the Dockerfile above:
   based on the latest Node image, and the Database image is based on
   the latest MongoDB image.
 \item Second, any necessary packages are installed.  For the RR Debug
-  Pod image, rr is compiled from source and installed.
+  Session image, rr is compiled from source and installed.
 \item A non-root user is created if necessary.
 \item Program files are copied over and a file structure is created.
-  Packages that don't rely on the base images builtin package manager
-  are installed at this time.  In the example above, these include
-  Python packages.
+  Packages that don't rely on the base image's built in package
+  manager are installed at this time.  In the example above, these
+  include Python packages.
 \item A startup command is defined.
 \end{enumerate}
 
@@ -1081,7 +1115,7 @@ At the heart of the collaborative debugger is the RR Debug Session.
 Every time a user wants to debug a new program execution, an RR Debug
 Session Pod is dynamically created by the API server.  The new Pod is
 assigned a unique five digit identification number when it is created.
-This five digit number, is used as the channel for the RR Debug
+This five digit number is used as the channel for the RR Debug
 Session, separating its communication from other RR Debug Session
 Pods.  Clients, RR Message Server Pods, and the RR Debug Session Pod
 connect through the RR Message Load Balancer.  Clients and RR Debug
@@ -1091,7 +1125,7 @@ clients and an RR Debug Session Pod is outlined in the diagram below:
 
 \begin{figure}[h!]
 
-  \includegraphics[scale=1]{rr_detailed}
+  \includegraphics[scale=.8]{rr_detailed}
   \centering
   \caption{RR Message Server Communication Cycle}
   \label{rr:detailed}
@@ -1110,9 +1144,9 @@ a response is as follows:
   on a channel, this equates to emitting a message to the Pod
   directly.
 \item The RR Debug Session Pod receives the message, and passes the
-  command to its instance of RRInterface.  When it receives a
-  response, it emits the output from rr along with other debugging
-  information and the channel.
+  command to its instance of RRInterface, the class which controls rr.
+  When it receives a response, it emits the output from rr along with
+  other debugging information and the channel.
 \item The RR Message Server receives the response, and emits a
   response message that clients are equipped to receive on the
   corresponding channel.
@@ -1193,6 +1227,10 @@ clients having a handler defined for \lstinline{'rr_response'}.
 
 \subsubsection{Tools Used}
 
+RR Debug Sessions primarily manage and communicate with rr, which has
+already been covered in detail in \ref{rr}.  pygdbmi is used for this
+process.
+
 \paragraph{pygdbmi}
 
 In order to ``support the development of systems which use the
@@ -1208,19 +1246,20 @@ To parse rr output into Python dictionaries and to easily control rr
 as a subprocess, pygdbmi \cite{pygdbmi} is used in each debugging Pod.
 pygdbmi's abstraction simplifies programmatically controlling rr.  A
 Pod can receive a command from the client, pass it to rr, and respond
-without having to deal with parsing gdb/mi output or with directly
-managing the rr process.
+without having handle directly parsing gdb/mi output or managing the
+rr process.
 
 \subsubsection{Building Example Pods} \label{buildingchannel}
 
 The process for building RR Debug Session example images is differs
 slightly from other images used by the collaborative debugger.
 Currently, three example RR Debug Session images are available for
-use.  Example container images are based on the primary RR Debug
-Session image, RR Translation.  The build process for this image,
-based on the lasted official Ubuntu container image, installs rr,
-python, and all necessary packages as well as the app that will run on
-the final image, \lstinline{rrtranslation.py}.
+use: \lstinline{hash}, \lstinline{smash}, and \lstinline{memoization}.
+Example container images are based on the primary RR Debug Session
+image, RR Translation.  The build process for this image, based on the
+lasted official Ubuntu container image, installs rr, python, and all
+necessary packages as well as the app that will run on the final
+image, \lstinline{rrtranslation.py}.
 
 \begin{lstlisting}[language=Dockerfile,basicstyle=\linespread{0.5}\ttfamily,caption={RR Debug Session Hash Example---Dockerfile},captionpos=b]
 FROM example-container-registry.com/sproj/...
@@ -1231,7 +1270,7 @@ COPY names .
 COPY startup.sh .
 \end{lstlisting}
 
-The Dockerfile shown above is for a simple hash program RR Debug
+The Dockerfile shown above is for the \lstinline{hash} RR Debug
 Session example.  The build process copies over any necessary files,
 as well as a startup script:
 
@@ -1248,18 +1287,12 @@ startup.
 \par
 
 Current example pod startup scripts compile the program to be debugged
-and record execution when the pod is created.  It is easy to create a
-more specific example to be replayed, if exact reproduction of
-syscalls or other non-deterministic behavior is desired.  The
-example's creator can record an rr session locally ahead of building
-the example Pod and copy the recording into the appropriate folder
-during the build process.  Since rr recordings are portable, the
-example will replay without issue in the RR Debug Session Pod.
+and record execution when the pod is created.
 
 \subsubsection{The RR Translation Program} \label{joiningchannel}
 
-The RR Translation program consists of two main components: a socket.io
-client, \lstinline{sio}, and an instance of the
+The RR Translation program consists of two main components: a
+Socket.IO client, \lstinline{sio}, and an instance of the
 \lstinline{RRInterface} class, \lstinline{rri}, that controls the rr
 subprocess and parses interactions.  Simple code to read information
 about the current source file currently exists within
@@ -1269,8 +1302,8 @@ be broken out into its own class if more complexity is added.
 
 The RR Translation program's socket.io client instance begins by
 connecting to the RR Message Server.  It immediately emits a
-\lstinline{'join_channel'} message, using the channel passed in from
-the Kubernetes API call on it's creation. 
+\lstinline{'join_channel'} message, using the channel number passed in
+by the Kubernetes API on Pod creation (\ref{dynamicc}).
 
 \begin{lstlisting}[language=Python,basicstyle=\linespread{0.5}\ttfamily,caption={RR Translation Main},captionpos=b]
 if __name__ == '__main__':
@@ -1336,7 +1369,7 @@ executed is forbidden.  Currently only one gdb command,
 \lstinline{shell}, is disallowed.  Parsing the output from
 \lstinline{shell} is difficult, it is of virtually no use since
 \textit{recordings}, not currently executing programs that
-\lstinline{shell} could effect are being debugged, and it opens the
+\lstinline{shell} could effect, are being debugged.  It also opens the
 door to security issues.  Though containerization means that the most
 users could probably do is render their own debug session useless, the
 downsides of \lstinline{shell} far outweigh the benefits.
@@ -1357,18 +1390,18 @@ clients as a seamless restoration of a previous Debug Session.
 \par
 
 Since the frontend currently consists of a terminal interface to rr
-and a view of the current source code, write does not need to return
-any information from rr other than console output.  Future versions of
-the collaborative debugger that support visualization tools could use
-gdb/mi commands such as \lstinline{-stack-list-frames} to retrieve
-information to be used by frontend visualization tools.
+and a view of the current source code, \lstinline{write} does not need
+to return any information from rr other than console output.  Future
+versions of the collaborative debugger that support visualization
+tools could use gdb/mi commands such as \lstinline{-stack-list-frames}
+to retrieve information to be used by frontend visualization tools.
 \lstinline{console_output} extracts user-relevant output from the
 dictionary returned by \lstinline{GDBController}'s \lstinline{write}
 method.  The \lstinline{get_full_rr_response} method ensures that all
 relevant output has been received from the rr subprocess before
-returning.  Write reduces the lengthy dictionary that would be
-produced by a command as simple as \lstinline{break main} into a few
-lines of user-relevant output.
+returning.  \lstinline{write} reduces the lengthy dictionary that
+would be produced by a command as simple as \lstinline{break main}
+into a few lines of user-relevant output.
 \par
 
 After the \lstinline{'rr_command'} event handler has received a
@@ -1405,7 +1438,7 @@ Server to ensure students receive a pleasant and near-identical
 experience to debugging locally in the future.  The system of
 inheritance used to create example debug session pods is designed to
 be as simple as possible, though a more fully featured frontend could
-simplify this process further in the future.
+streamline this process further in the future.
 
 % \section{Tools Used}
 
@@ -1490,7 +1523,7 @@ example is outlined below:
 
 \begin{figure}[h!]
 
-  \includegraphics[scale=1]{login_request}
+  \includegraphics[scale=.9]{login_request}
   \centering
   \caption{API Request Process---Login}
   \label{rr:detailed}
@@ -1608,15 +1641,15 @@ Currently supported API requests are as follows:
 \end{enumerate}
 
 All the API request handlers listed above return an error message in
-the case of an error occurring during the processing of an API request.
-Since most errors that could occur would either be the result of
-unanticipated issues on the part of the user, or of some unforeseen
-catastrophic internal error, informing users of error specifics would
-be unhelpful.  Some \lstinline{TranslationPodManager} and
-\lstinline{UserManager} functions throw specific errors in the event
-of duplicate usernames, channels that do not exist, etc.  These errors
-are caught and meaningful error messages are returned to the frontend
-webapp, which can then pass them on to the user.
+the case of an error occurring during the processing of an API
+request.  Since most errors that could occur would either be the
+result of unanticipated issues on the part of the user, or of some
+unforeseen catastrophic internal error, informing users of error
+specifics is often unhelpful.  Some \lstinline{TranslationPodManager}
+and \lstinline{UserManager} functions throw specific errors in the
+event of duplicate usernames, channels that do not exist, etc.  These
+errors are caught and meaningful error messages are returned to the
+frontend webapp, which can then pass them on to the user.
 \par
 
 To examine the process of processing an API request, it makes sense to
@@ -1694,8 +1727,8 @@ easily added to the collaborative debugger upon creation.
 \par
 
 MongoDB keeps \lstinline{_id}s unique.  In addition, the collaborative
-debugger defines uniqueness constrains on \lstinline{users:name},
-\lstinline{pods:channel}, and \lstinline{examples:name} when the
+debugger defines uniqueness constrains on \lstinline{users.name},
+\lstinline{pods.channel}, and \lstinline{examples.name} when the
 database is created.
 
 % \begin{lstlisting}[basicstyle=\linespread{0.5}\ttfamily,caption={Frontend/API Server Configuration},captionpos=b]
@@ -1732,7 +1765,7 @@ database is created.
 % }
 % \end{lstlisting}
 
-\subsubsection{Processing a POST Request---Dynamic Pod Creation}
+\subsubsection{Processing a POST Request---Dynamic Pod Creation} \label{dynamicc}
 
 To dynamically create a Pod, \lstinline{create_pod} gets the container
 registry URL of the image to base the Pod on, creates the new Pod,
@@ -1802,12 +1835,12 @@ First, \lstinline{DatabaseController}'s \lstinline{add_pod} method is
 called to insert a new \lstinline{pods} record into the database.
 \lstinline{add_pod} randomly generates a new five digit
 \lstinline{channel} for the Pod, using the uniqueness constraint
-imposed on \lstinline{pods:channel} to ensure an unused
+imposed on \lstinline{pods.channel} to ensure an unused
 \lstinline{channel} is generated.  If no channels are open an error is
 raised.  Otherwise, the users passed to \lstinline{add_pod} are bound
 to the new Pod in the database, and \lstinline{channel} is returned.
 This process has the effect of limiting the number of simultaneous RR
-Debug Sessions that can be in use at the same time to 89999, and of
+Debug Sessions that can be in use at the same time to 89,999, and of
 slowing as more channels are used.  Given the few current users, the
 likelihood of a collision when generating a new channel is low enough
 that a more advanced method is unnecessary.
@@ -1858,7 +1891,7 @@ teaching and learning of debugging.
 
 \section{Next Steps} \label{next}
 
-\subsection{Current Functionality}
+\subsection{Current Functionality} \label{current}
 
 The following section details the first few steps students take to
 explore the \lstinline{memoization} example using the collaborative
@@ -1916,7 +1949,7 @@ the students run the program.\pagebreak
 
 Student A enters \lstinline{break 52} to set a breakpoint at line 52,
 the base case of \lstinline{fib_rec}.  Student B types \lstinline{run}
-and then \lstinline{c} to restart the program and continue to the
+and then \lstinline{c} to restart the recording and continue to the
 breakpoint.\pagebreak
 
 \begin{figure}[h!]
