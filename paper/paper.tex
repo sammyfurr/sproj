@@ -314,7 +314,7 @@ the collaborative debugger must fulfill two key requirements:
 \subsection{Encouraging Collaboration} \label{exisitingcollab}
 
 A large number of tools exist to facilitate collaborative programming.
-COVID19 has greatly increased the demand for tools that not only make
+COVID-19 has greatly increased the demand for tools that not only make
 collaboration easier, but make it easy remotely.  The tool that was
 most influential in the design of the collaborative debugger,
 Replit\cite{replit}, enables remote collaborative programming.
@@ -376,19 +376,135 @@ collaborative debugger:
   different types of functions.
 \end{enumerate}
 
-\lstinline{memoization} will be covered in detail in the following
-section on the frontend of the collaborative debugger (\ref{webapp}).
-All three examples show how teachers can design debugging sessions
-around specific concepts.  The collaborative debugger should make it
-easy to distribute these sessions and for students to learn from them
-collaboratively.
+% \lstinline{memoization} will be covered in detail in the following
+% section on the frontend of the collaborative debugger (\ref{webapp}).
+% All three examples show how teachers can design debugging sessions
+% around specific concepts.
+The collaborative debugger should make it easy to distribute these
+sessions and for students to learn from them collaboratively.
 \par
 
-Students using all three examples would benefit greatly from
-visualization tools to help understand pointer locations, the process
-space, and data structures.  As discussed in \ref{vistools}, adding
-visualization tools to the collaborative debugger should be relatively
-easy.
+\subsection{Current Functionality} \label{current}
+
+The following section details the first few steps students take to
+explore the \lstinline{memoization} example using the current version
+of the collaborative debugger.  This example, which focuses more on
+learning about how functions execute than on fixing bugs, highlights
+the ways in which the collaborative debugger enables pair programming.
+\par
+
+Students A and B begin by examining the call stack at its deepest
+point in the recursive nth Fibonacci number function.  The terminal
+interface to rr and the source code view have been color-inverted to
+improve readability in this paper.
+
+\begin{figure}[h!]
+
+  \includegraphics[width=\textwidth]{session1i}
+  \centering
+  \caption{Creating a new Memoization Example Session}
+  \label{session1i}
+\end{figure}
+
+Students A and B both log into the collaborative debugger.  To start a
+new session, Student A selects ``memoization'' from the list of
+example sessions.\pagebreak
+
+\begin{figure}[h!]
+
+  \includegraphics[width=\textwidth]{session2i}
+  \centering
+  \caption{Joining the Memoization Example Session}
+  \label{session2i}
+\end{figure}
+
+In order to join Student A's session, Student B uses session code
+``71825''.  Meanwhile, Student A is presented with the the main view
+of the collaborative debugger.  On the left is a view of the source
+code for the \lstinline{memoization} example.  On the right is the
+terminal interface to rr, the enhancement to gdb used by the
+collaborative debugger.  Students debug recordings of program
+execution, which can be replayed deterministically. rr is covered in
+detail in \ref{rr}.\pagebreak
+
+\begin{figure}[h!]
+
+  \includegraphics[width=\textwidth]{session3i}
+  \centering
+  \caption{Observing Output from the Memoization Example Session}
+  \label{session3i}
+\end{figure}
+
+Student B now types \lstinline{c} to continue execution.  Both
+students see the command and output: execution times and results for
+three different implementations of nth Fibonacci.  An advantage of
+rr's recording model is that these numbers will be the same every time
+the students run the program.\pagebreak
+
+\begin{figure}[h!]
+
+  \includegraphics[width=\textwidth]{session4i}
+  \centering
+  \caption{Setting a Breakpoint in the Memoization Example Session}
+  \label{session4i}
+\end{figure}
+
+Student A enters \lstinline{break 52} to set a breakpoint at line 52,
+the base case of \lstinline{fib_rec}.  Student B types \lstinline{run}
+and then \lstinline{c} to restart the recording and continue to the
+breakpoint.\pagebreak
+
+\begin{figure}[h!]
+
+  \includegraphics[width=\textwidth]{session5i}
+  \centering
+  \caption{Examining the Stack in the Memoization Example
+    Session}
+  \label{session5i}
+\end{figure}
+
+The students examine the stack resulting from a call of
+\lstinline{fib_rec(30)}.  Students can inspect different areas of the
+program and output while collaborating---Student A can look at
+\lstinline{fib_rec}, while Student B scrolls up for a preview of the
+memoized implementation.
+\par
+
+The students will continue to inspect the stack for other functions,
+exploring the reasons for the vast performance disparity between
+\lstinline{fib_memo} and \lstinline{fib_rec}.  Students A and B can
+not only help each other to learn about the stack and memoization, but
+can also teach one another how to use a debugger.  Because the
+frontend produces near-identical output to rr, students can directly
+translate their knowledge to it or gdb in the future.  Paradigms, such
+as examining the stack to understand execution, can be expanded to all
+future debugging.
+
+\subsection{Considerations}
+
+Though the collaborative debugger makes it easy for students in the
+above example to practice using a debugger together, more features
+could be added to help improve students' understanding of the program
+being debugged. Students using all three examples would benefit
+greatly from visualization tools to help understand pointer locations,
+the process space, and data structures.
+\par
+
+In \lstinline{memoization}, a simple stack visualization that updated
+with each command sent to the debugger would allow students to more
+easily see changes in the process space.  Rather than having to
+repeatedly \lstinline{continue} and \lstinline{backtrace} to visualize
+the stack, students could simply step through relevant portions of the
+program and watch as the stack updated.  This sort of visualization
+pairs particularly well with \lstinline{reverse-continue} or
+\lstinline{reverse-step}(\lstinline{i}), allowing students to move back and forth
+over particularly significant stack changes.  Visualization tools also
+aid students' understanding of debugging---students can see how typing
+\lstinline{bt} to backtrace or \lstinline{info frame} to view
+information about the current stack frame provide the same information
+as the visualization tools they are already familiar with.  As
+discussed in \ref{vistools}, adding visualization tools to the
+collaborative debugger should be relatively easy.
 \par 
 
 The aim of the collaborative debugger is to provide students with an
@@ -400,10 +516,9 @@ undertaught area of debugging.
 
 \section{Frontend Webapp}\label{webapp}
 
-Before diving into the construction of the frontend webapp, it may be
-helpful to look at the steps two students would take to debug the
-\lstinline{memoization} example program remotely.  This example is
-covered in more detail in \ref{current}.
+An overview of the \lstinline{memoization} example discussed in
+\ref{current} is below.  This pattern is followed by all debugging
+sessions in the frontend of the collaborative debugger.
 
 \begin{figure}[h!]
 
@@ -446,16 +561,16 @@ programmer to record the execution of a program on any compatible
 machine and replay the execution later.  This enhances GDB's ability
 to ``time-travel'' when debugging, using commands such as
 \lstinline{reverse-continue} and
-\lstinline{reverse-stepi}\cite{gdbman} to step backwards and forwards
-through a program's execution.  Through a novel encapsulation of the
-execution space, rr is able to deterministically record and replay the
-execution of syscalls and other process behavior that differs
-run-to-run.  This is invaluable when trying to debug behavior that is
-not entirely dependent on the code being debugged.  A typical workflow
-in rr consists of recording an inexplicable error, replaying execution
-to find the area in which the error occurs, and then narrowing in on
-the bug not by re-running the entire program, but by progressing back
-and forth through execution in the problem area.
+\lstinline{reverse-step}(\lstinline{i})\cite{gdbman} to step backwards
+and forwards through a program's execution.  Through a novel
+encapsulation of the execution space, rr is able to deterministically
+record and replay the execution of syscalls and other process behavior
+that differs run-to-run.  This is invaluable when trying to debug
+behavior that is not entirely dependent on the code being debugged.  A
+typical workflow in rr consists of recording an inexplicable error,
+replaying execution to find the area in which the error occurs, and
+then narrowing in on the bug not by re-running the entire program, but
+by progressing back and forth through execution in the problem area.
 \par
 
 rr is an ideal tool for teaching debugging because it allows
@@ -650,8 +765,8 @@ line 52 in the source file.  To do this they will type the command
 backend, and all users in the same debug session (17734 in Figure
 \ref{frontend:rrterm}) will see the debuggers response:\\
 \lstinline{Breakpoint 1 at 0x561c8fede303: file memo.c, line 52.}\\
-Users who did not send the command \lstinline{c} will see it displayed
-along with the response.
+Users who did not send the command \lstinline{break 52} will see it
+displayed along with the response.
 
 \subsubsection{Sending a Command}
 
@@ -850,7 +965,7 @@ development.
 The collaborative debugger consists of a distributed Kubernetes
 backend and frontend React webapp.  Kubernetes was chosen for the
 backend primarily so that a Pod could be created dynamically for each
-debugging session.  
+debugging session. \pagebreak
 
 \begin{figure}[h!]
 
@@ -1046,7 +1161,7 @@ to a private container registry for use in the collaborative debugger.
 The Pod configuration schema for most Pods in the collaborative
 debugger is fairly generic.  It consists of a \lstinline{name}, an
 \lstinline{image} sourced from the container registry, and in the case
-of pods that need to interact with a load balancer, an
+of Pods that need to interact with a load balancer, an
 \lstinline{app}.
 
 \begin{lstlisting}[language=YAML,basicstyle=\linespread{0.5}\ttfamily,caption={RR Debug Session Schema},captionpos=b]
@@ -1076,7 +1191,7 @@ rr to properly trace system calls.
 For statically created Pods, the \lstinline{kubectl apply} command is
 used to create new Pods.  Kubernetes pulls the container image defined
 in the schema from the container registry and starts the Pod with any
-necessary commands.  The database Pod is connected to a long-term
+necessary commands.  The Database Pod is connected to a long-term
 storage volume at this time.  Upon successful creation, the Pod is
 ready to interact with any necessary load balancers.
 
@@ -1119,7 +1234,7 @@ This five digit number is used as the channel for the RR Debug
 Session, separating its communication from other RR Debug Session
 Pods.  Clients, RR Message Server Pods, and the RR Debug Session Pod
 connect through the RR Message Load Balancer.  Clients and RR Debug
-Sessions send messages using the channel assigned to the pod at
+Sessions send messages using the channel assigned to the Pod at
 creation time.  A diagram of one full communication cycle between two
 clients and an RR Debug Session Pod is outlined in the diagram below:
 
@@ -1286,8 +1401,8 @@ Pod's channel as argument \lstinline{$1} by the Kubernetes API on
 startup.
 \par
 
-Current example pod startup scripts compile the program to be debugged
-and record execution when the pod is created.
+Current example Pod startup scripts compile the program to be debugged
+and record execution when the Pod is created.
 
 \subsubsection{The RR Translation Program} \label{joiningchannel}
 
@@ -1436,7 +1551,7 @@ natively.
 Effort is taken in the design of the RR Debug Session and RR Message
 Server to ensure students receive a pleasant and near-identical
 experience to debugging locally in the future.  The system of
-inheritance used to create example debug session pods is designed to
+inheritance used to create example Debug Session Pods is designed to
 be as simple as possible, though a more fully featured frontend could
 streamline this process further in the future.
 
@@ -1570,7 +1685,7 @@ requests.
 
 The API server is implemented using Flask.  The server program
 consists of handlers for the various API routes and instances of two
-classes which communicate with the database/Kubernetes API:
+classes which communicate with the database and/or Kubernetes API:
 \lstinline{TranslationPodManager} and \lstinline{UserManager}.  The
 full structure of the API Server program, \lstinline{api.py} is shown
 below:
@@ -1590,7 +1705,7 @@ and \lstinline{UserManager}, each instantiate another class which
 interacts with the database, \lstinline{DatabaseController}, as an
 instance variable.  \lstinline{TranslationPodManager} further
 instantiates the Kubernetes Core V1 Python API to communicate with the
-cluster in order to create/delete pods.  This process of abstraction
+cluster in order to create/delete Pods.  This process of abstraction
 ensures that the database, underlying cluster structure, and
 authentication methods can all change without significant changes
 needing to be made to \lstinline{api.py}.
@@ -1857,7 +1972,7 @@ the RR Message Server in \lstinline{rrtranslation.py}
 The Kubernetes API is then finally used to create the Pod.  The Pod is
 created in the default namespace.  This could be changed to logically
 isolate dynamically and statically created Pods with minimal hassle,
-since Kubernetes' DNS resolution can connect pods across namespaces.
+since Kubernetes' DNS resolution can connect Pods across namespaces.
 If Pod creation fails, an error will be thrown.  Otherwise, a loop is
 used to wait until \lstinline{rrtranslation.py} is running inside the
 Pod.  Once the Pod is ready, \lstinline{channel} is returned.
@@ -1879,7 +1994,7 @@ debugger together.  It authenticates users through the database, joins
 the frontend and Kubernetes cluster through the dynamic creation of
 Pods, and starts the interaction between users and the programs they
 wish to debug.  Care has been taken to make it modular and extensible
-within reason, and additional authentication or pod creation features
+within reason, and additional authentication or Pod creation features
 should be easy to add.
 \par
 
@@ -1890,93 +2005,6 @@ hopefully come together to provide an experience that facilitates the
 teaching and learning of debugging.
 
 \section{Next Steps} \label{next}
-
-\subsection{Current Functionality} \label{current}
-
-The following section details the first few steps students take to
-explore the \lstinline{memoization} example using the collaborative
-debugger.  Students A and B begin by examining the call stack at its
-deepest point in the recursive nth Fibonacci number function.  The
-terminal interface to rr and the source code view have been
-color-inverted to improve readability in this paper.
-
-\begin{figure}[h!]
-
-  \includegraphics[width=\textwidth]{session1i}
-  \centering
-  \caption{Creating a new Memoization Example Session}
-  \label{session1i}
-\end{figure}
-
-To start a new session, Student A selects ``memoization'' from the
-list of example sessions.\pagebreak
-
-\begin{figure}[h!]
-
-  \includegraphics[width=\textwidth]{session2i}
-  \centering
-  \caption{Joining the Memoization Example Session}
-  \label{session2i}
-\end{figure}
-
-In order to join Student A's session, Student B uses session code
-``71825''.  Meanwhile, Student A is presented with the the main view
-of the collaborative debugger.  On the right is a view of the source
-code for the \lstinline{memoization} example.  On the left is the
-terminal interface to rr.\pagebreak
-
-\begin{figure}[h!]
-
-  \includegraphics[width=\textwidth]{session3i}
-  \centering
-  \caption{Observing Output from the Memoization Example Session}
-  \label{session3i}
-\end{figure}
-
-Student B now types \lstinline{c} to continue execution.  Both
-students see the command and output: execution times and results for
-three different implementations of nth Fibonacci.  An advantage of
-rr's recording model is that these numbers will be the same every time
-the students run the program.\pagebreak
-
-\begin{figure}[h!]
-
-  \includegraphics[width=\textwidth]{session4i}
-  \centering
-  \caption{Setting a Breakpoint in the Memoization Example Session}
-  \label{session4i}
-\end{figure}
-
-Student A enters \lstinline{break 52} to set a breakpoint at line 52,
-the base case of \lstinline{fib_rec}.  Student B types \lstinline{run}
-and then \lstinline{c} to restart the recording and continue to the
-breakpoint.\pagebreak
-
-\begin{figure}[h!]
-
-  \includegraphics[width=\textwidth]{session5i}
-  \centering
-  \caption{Examining the Stack in the Memoization Example
-    Session}
-  \label{session5i}
-\end{figure}
-
-The students examine the stack resulting from a call of
-\lstinline{fib_rec(30)}.  Students can inspect different areas of the
-program and output while collaborating---Student A can look at
-\lstinline{fib_rec}, while Student B scrolls up for a preview of the
-memoized implementation.
-\par
-
-The students will continue to inspect the stack for other functions,
-exploring the reasons for the vast performance disparity between
-\lstinline{fib_memo} and \lstinline{fib_rec}.  Students A and B can
-not only help each other to learn about the stack and memoization, but
-can also teach one another how to use a debugger.  Because the
-frontend produces near-identical output to rr, students can directly
-translate their knowledge to it or gdb in the future.  Paradigms, such
-as examining the stack to understand execution, can be expanded to all
-future debugging.
 
 \subsection{Features to Add}
 
@@ -2001,7 +2029,7 @@ the collaborative debugger.  gdb/mi supports commands which give
 structured output of both these aspects of the execution space, and
 the frontend has been designed to make adding visualizations of them
 simple.  Adding visualization features will bring the collaborative
-debugger much closer towards hopefully fulfilling it's second
+debugger much closer towards hopefully fulfilling its second
 requirement.
 
 \subsection{Testing Efficacy}
@@ -2017,8 +2045,8 @@ determine whether it is an ideal platform for collaborative debugging.
 
 A study similar to those undertaken in \cite{10.1145/1026487.1008043},
 \cite{10.1145/1145287.1145293}, and \cite{10.1145/3361721.3361724}
-could be done to test both these aspects.  Students participating in
-an introductory systems programming class could be split into three
+could be done to test both of these aspects.  Students participating
+in an introductory systems programming class could be split into three
 groups.  Group one could study debugging individually, using rr by
 themselves to progress through debugging sessions designed by the
 instructor.  Group two could study debugging in pairs, relying on
@@ -2031,7 +2059,7 @@ unseen and self-generated programs could then be tested.
 \subsection{Conclusions}
 
 The collaborative debugger aims to encourage collaboration and build
-students knowledge of debugging through careful design.  Many
+students' knowledge of debugging through careful design.  Many
 components of a distributed system come together to create a platform
 that hopefully benefits both teachers and students.  Through
 deliberate design, the collaborative debugger can conceivably be the
